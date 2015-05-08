@@ -1,7 +1,9 @@
-[![Build Status](https://travis-ci.org/lbraglia/lbsurv.svg)](https://travis-ci.org/lbraglia/lbsurv)
+#lbsurv [![Build Status](https://travis-ci.org/lbraglia/lbsurv.svg)](https://travis-ci.org/lbraglia/lbsurv)
 
-Some re-engineered survival analysis related functions from
-[yapomif](http://github.com/lbraglia/yapomif), following these criteria:
+Some survival analysis utility functions from
+[yapomif](http://github.com/lbraglia/yapomif), re-engineered following
+these criteria:
+
 - adopt hadley_s_style_for_naming;
 - move graphical functions to ggplot2;
 - systematic/full-coverage unit testing;
@@ -9,3 +11,10 @@ Some re-engineered survival analysis related functions from
   usage);
 - R code cleaning  
 - port code to C where useful
+
+TODO:
+[x]
+[ ] avg_surv
+[ ] censor_at
+[ ] fup_completeness
+[ ] km
