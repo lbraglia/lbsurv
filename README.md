@@ -13,8 +13,8 @@ these criteria:
 - port code to C where useful
 
 TODO:
-[x]
 [ ] avg_surv
-[ ] censor_at
+[x] censor_at
 [ ] fup_completeness
 [ ] km
+[x] tteep
