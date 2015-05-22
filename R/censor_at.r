@@ -30,17 +30,16 @@
 #'
 #' ## Example 1:
 
-#' time   <- c(100,150)
-#' status <- c(  0,  1)
+#' time   <- c(100,150, 200)
+#' status <- c(  0,  1,  NA)
 #' cbind(data.frame(time, status), # original
 #'       censor_at(time = time, status = status, censoring_time = ctimes))
 #'
 #' ## Example 2
-#' time   <- c(100,150)
-#' status <- c(  1,  0)
+#' time   <- c(100,150, NA)
+#' status <- c(  1,  0,  0)
 #' cbind(data.frame(time, status), # original
 #'       censor_at(time = time, status = status, censoring_time = ctimes))
-#' 
 #' @export
 censor_at <- function(time = NULL, status = NULL, censoring_time = NULL) {
 
@@ -56,27 +55,17 @@ censor_at <- function(time = NULL, status = NULL, censoring_time = NULL) {
 
   ## normalize input
   censoring_time <- sort(censoring_time[!is.na(censoring_time)])
-  
+    
   ## working dataset: repeat/rbind the dataset for the number of censoring
   ## times and add those in a column
   db <- do.call(rbind,
                 list(data.frame(time, status))[rep(1, length(censoring_time))])
   db$censoring_time <- rep(censoring_time, each = length(time))
-  
-  ## Move to C, please
-  subst <- function(t,s,c) {
-    if (t <= c) {
-      c(t, s)
-    } else {
-      c(c, 0)
-    }
-  }
-  ## now rval is a dataframe with long style
-  rval <- data.frame(t(apply(db, 1, function(x) {
-                               subst(t = x[1], s = x[2], c = x[3])
-                             })))
-                             
-
+  rval <- as.data.frame(do.call(cbind, .Call("censor_at_slave",
+                                             db$time,
+                                             as.integer(db$status),
+                                             db$censoring_time,
+                                             PACKAGE = "lbsurv")))
   ## normalize output: rval as a wide style data.frame
   rval <- do.call(cbind, split(rval, db$censoring_time))
 

@@ -42,14 +42,14 @@ to censoring time.
 ctimes <- c(160, 150, 125, 75)
 
 ## Example 1:
-time   <- c(100,150)
-status <- c(  0,  1)
+time   <- c(100,150, 200)
+status <- c(  0,  1,  NA)
 cbind(data.frame(time, status), # original
       censor_at(time = time, status = status, censoring_time = ctimes))
 
 ## Example 2
-time   <- c(100,150)
-status <- c(  1,  0)
+time   <- c(100,150, NA)
+status <- c(  1,  0,  0)
 cbind(data.frame(time, status), # original
       censor_at(time = time, status = status, censoring_time = ctimes))
 }

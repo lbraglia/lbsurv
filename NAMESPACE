@@ -3,3 +3,4 @@
 export(censor_at)
 export(fup_completeness)
 export(tteep)
+useDynLib(lbsurv)
