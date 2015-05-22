@@ -2,7 +2,7 @@
 % Please edit documentation in R/censor_at.r
 \name{censor_at}
 \alias{censor_at}
-\title{Censor time to event end point at a certain time.}
+\title{Censor time to event end point at a given time/period of follow up.}
 \usage{
 censor_at(time = NULL, status = NULL, censoring_time = NULL)
 }
@@ -17,24 +17,40 @@ censor_at(time = NULL, status = NULL, censoring_time = NULL)
 A data frame to be used with \code{\link{cbind}}
 }
 \description{
-Censor time to event end point at a certain time. Implemented only for
-"right" type of censored data.
+Censor time to event end point at a given time. Implemented for
+right-censored dataset.
+}
+\details{
+The algorithm works as follow.
+If time of censoring is higher than (or equal to) patient's time, does
+nothing and returns time and status as they are.
+Otherwise:
+
+- if the patients didn't experienced the event at full follow up,
+  he/she didn't experienced even at the previous censoring time:
+  therefore the algorithm should set censored time but leave indicator
+  variable unchanged
+- if the patients experienced the event at time t, we hyphotize he/she
+  was without event at time t-1 (aka an event is experienced the same
+  day which is registered in the dataset), therefore the algorithm set
+  0 to indicator variable and set time to censoring time
+
+... synthesizing, in both cases set indicator variable to 0 and time
+to censoring time.
 }
 \examples{
+ctimes <- c(160, 150, 125, 75)
+
+## Example 1:
 time   <- c(100,150)
 status <- c(  0,  1)
-(original <- data.frame(time, status))
-censor_at(time = time, status = status, censoring_time = 160)
-censor_at(time = time, status = status, censoring_time = 150)
-censor_at(time = time, status = status, censoring_time = 125)
-censor_at(time = time, status = status, censoring_time = 75)
+cbind(data.frame(time, status), # original
+      censor_at(time = time, status = status, censoring_time = ctimes))
 
+## Example 2
 time   <- c(100,150)
 status <- c(  1,  0)
-(original <- data.frame(time, status))
-censor_at(time = time, status = status, censoring_time = 160)
-censor_at(time = time, status = status, censoring_time = 150)
-censor_at(time = time, status = status, censoring_time = 125)
-censor_at(time = time, status = status, censoring_time = 75)
+cbind(data.frame(time, status), # original
+      censor_at(time = time, status = status, censoring_time = ctimes))
 }
 
