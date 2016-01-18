@@ -1,8 +1,6 @@
-#' Calculate C index of of follow up completenes
+#' Calculate C index of of follow up completeness
 #' 
-#' 
-#' Calculate C index of of follow up completenes.
-#' 
+#' Calculate C index of of follow up completeness.
 #' 
 #' @param time Follow up (in days?)
 #' @param status event indicator
