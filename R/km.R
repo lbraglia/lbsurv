@@ -1,3 +1,29 @@
+#' Make a suitable legend command for km
+#'
+#' Make a suitable legend command for km
+#'
+#' @param title legend title
+#' @param levels factor levels
+#' @param colors colors
+#' @param lty lty
+#' @param lwd lwdù
+#' @export
+km_legend <- function(title, levels, colors, lty, lwd){
+    titl <- deparse(title)
+    lev <- deparse(levels)
+    cols <- deparse(colors)
+    lt <- deparse(lty)
+    lw <- deparse(lwd)
+    sprintf(paste0("legend(x = 72, y = 0.9, title = %s,",
+                   " bg = \"white\", ",
+                   "       legend = %s, col = %s, lty = %s, lwd = %s)"),
+            titl, lev, cols, lt, lw)
+}
+
+
+
+
+
 #' Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.
 #' 
 #' 
@@ -21,16 +47,16 @@
 #'     confidence interval are plotted only if strata has two or more
 #'     levels
 #' @param test tests: 'none' = don't plot tests, 'logr' = log-rank test,
-#'     'hr'=hazard ratio, 'both' = log-rank test and hazard ratio
+#'     'hr' = hazard ratio, 'both' = log-rank test and hazard ratio
 #' @param plot_n_at_risk Logical value: plot number at risk?
-#' @param gr_legend Graph command to add legend, as string
+#' @param legend_cmd Graph command to add legend, as string
 #' @param ... Further \code{\link{lines.survfit}} parameters
 #' @return The function plot the graph and return a list with
 #'     Laplan-Meier statistics
 #' @details The function make the hypothesis that times are measured
 #'     in days; in not leave time_unit not specified
 #' @export
-km2 <- function(time = NULL,
+km <- function(time = NULL,
                status = NULL,
                ## NULL = non stratified, otherwise stratifying variable
                strata = NULL,
@@ -58,7 +84,7 @@ km2 <- function(time = NULL,
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
                ## Graph command to add legend, as string
-               gr_legend = NULL,
+               legend_cmd = NULL,
                ## Further lines.survfit params
                ...                     
                ){
@@ -204,7 +230,7 @@ km2 <- function(time = NULL,
         logr.string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
                                logr$chisq, 
                                logr$df, 
-                               prettyPval(logr$p) )
+                               lbmisc::pretty_pval(logr$p))
         ## Cox Model (and summary
         cox <- survival::coxph(my.formula)
         scox <- summary(cox)
@@ -268,7 +294,7 @@ km2 <- function(time = NULL,
          )
     axis(2)		
     axis(1, at=times, labels=times/time_divisor)
-    addGrid(at.y=axTicks(2), at.x=times)
+    lbmisc::add_grid(at.y=axTicks(2), at.x=times)
     box()
     if (reverse) {
       lines(fit, fun = 'event', conf.int=conf_int,  ...)
@@ -277,8 +303,8 @@ km2 <- function(time = NULL,
     }
     
     ## Add legend
-    if (!is.null(gr_legend)) {
-        eval(parse(text = gr_legend))
+    if (!is.null(legend_cmd)) {
+        eval(parse(text = legend_cmd))
     }
 
     ## Add stat string to title
