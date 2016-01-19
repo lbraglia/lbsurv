@@ -3,9 +3,10 @@ Title: Survival analysis utility functions
 Version: 0.1
 Authors@R: as.person('Luca Braglia <lbraglia@mailbox.org> [aut, cre]')
 Description: Survival analysis utility functions.
-Depends:
+Depends: 
     R (>= 3.2.0)
 Imports: survival, lbmisc
 License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
+Suggests: testthat
