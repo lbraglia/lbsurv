@@ -1,16 +1,15 @@
-context("tteep function")
+context("tteep")
 
-test_that("ok with numerics", {
-
+test_that("tteep is ok with numerics", {
 
     test_data <- data.frame(
-        start_date = c(2,  0,  0,  0, NA,  0, NA),
+        start_date = c(0,  0,  0,  0, NA,  0, NA),
         prog_date  = c(3,  3, NA, NA, NA, NA, NA),
         death_date = c(6, NA,  6, NA, NA, NA, NA),
         last_fup   = c(6, 12,  6, 12, 12, NA, NA)
     )
     
-    answer <- structure(list(
+    right_answer <- structure(list(
         os_time    = c(6, 12, 6, 12, NA, NA, NA),
         os_status  = c(1,  0, 1,  0,  0,  0,  0),
         pfs_time   = c(3,  3, 6, 12, NA, NA, NA),
@@ -24,6 +23,6 @@ test_that("ok with numerics", {
         class      = "data.frame")
     
     with(test_data,
-         expect_that(tteep(start_date, prog_date, death_date, last_fup),
-                     is_identical_to(answer)))
+         expect_equal(tteep(start_date, prog_date, death_date, last_fup),
+                      right_answer))
 })
