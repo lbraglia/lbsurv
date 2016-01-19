@@ -26,10 +26,12 @@
 #' @param ep character: which end points to calculate, default to \code{c("os","pfs","ttp")}
 #' @return a \code{data.frame} to be used with \code{\link{cbind}}.
 #' @examples
-#' db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01", "1900-01-01", NA          , "1900-01-01", NA)),
-#'                  prog_date  = as.Date(c("1900-03-01", "1900-03-01", NA          , NA          , NA          , NA          , NA)),
-#'                  death_date = as.Date(c("1900-06-01", NA          , "1900-06-01", NA          , NA          , NA          , NA)),
-#'                  last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01", "1900-12-31", "1900-12-31", NA          , NA)))
+#' db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01",
+#'                                         "1900-01-01", NA, "1900-01-01", NA)),
+#'                  prog_date  = as.Date(c("1900-03-01", "1900-03-01", NA, NA, NA, NA, NA)),
+#'                  death_date = as.Date(c("1900-06-01", NA, "1900-06-01", NA, NA, NA, NA)),
+#'                  last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01",
+#'                                         "1900-12-31", "1900-12-31", NA, NA)))
 #' db
 #' with(db, tteep(start_date, prog_date, death_date, last_fup))
 #' db2 <- data.frame(start_date = c(0,  0,  0,  0, NA,  0, NA),

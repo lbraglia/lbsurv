@@ -89,9 +89,9 @@ km <- function(time = NULL,
 
     ## TODO
     ## - permettere al plot di incastrarsi in un mfrow specificato a monte
-    ##   Attualmente possibile solo se plot_n_at_risk = FALSE (perchè in tal
+    ##   Attualmente possibile solo se plot_n_at_risk = FALSE (perche' in tal
     ##   caso non si usa oma)
-    ## - inserire la possibilità di visualizzare la mediana 
+    ## - inserire la possibilita' di visualizzare la mediana 
     ##   di sopravvivenza
     ## - se il plot non ha titolo e non ha test ottimizzare lo spazio
     ##   superiore eliminandolo
@@ -174,7 +174,7 @@ km <- function(time = NULL,
     ## estimates dataset and parameter defaults accordingly
     if (is.null(strata)) {
         db <- data.frame(time = time, status = status)
-        db <- lbmisc::remove_NA(db)
+        db <- lbmisc::NA_remove(db)
         mod_formula <- survival::Surv(time, status) ~ 1
         univariate <- TRUE
         n_stratas <- 1
@@ -182,7 +182,7 @@ km <- function(time = NULL,
         if (is.null(conf_int)) conf_int <- TRUE
     } else {
         db <- data.frame(time = time, status = status, strata = strata)
-        db <- lbmisc::remove_NA(db)
+        db <- lbmisc::NA_remove(db)
         mod_formula <- survival::Surv(time, status) ~ strata
         univariate <- FALSE
         n_stratas <- nlevels(strata)
@@ -301,7 +301,7 @@ km <- function(time = NULL,
 
         ## Utilizzo axis per plottare gli a rischio negli strati
         ## (la linea utilizzabile in presenza di titolo di asse
-        ## delle x è dalla 4 in poi: la 4 è per il titolo, dalla 5
+        ## delle x e' dalla 4 in poi: la 4 e' per il titolo, dalla 5
         ## in poi per i dati
         
         my.time <- summary(fit, times = times, extend=TRUE)$time
@@ -323,7 +323,7 @@ km <- function(time = NULL,
         
         ## Lo split pone i dati nell'ordine della lista
         ## nell'ordine dei dati, quindi per coerenza con l'ordine
-        ## dei colori è necessario riordinare la lista
+        ## dei colori e' necessario riordinare la lista
         
         spl.risk.data <- split( risk.data, risk.data$strata)
         spl.risk.data <- spl.risk.data[ strata_labels ]

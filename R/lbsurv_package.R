@@ -9,5 +9,5 @@
 #' @importFrom survival coxph
 #' @importFrom lbmisc pretty_pval
 #' @importFrom lbmisc add_grid
-#' @importFrom lbmisc remove_NA
+#' @importFrom lbmisc NA_remove
 NULL

@@ -1,7 +1,8 @@
 Package: lbsurv
-Title: Survival analysis utility functions
+Title: Survival Analysis Utility Functions
 Version: 0.1
-Authors@R: as.person('Luca Braglia <lbraglia@mailbox.org> [aut, cre]')
+Authors@R: person('Luca', 'Braglia', email = 'lbraglia@mailbox.org',
+                  role = c('aut', 'cre'))
 Description: Survival analysis utility functions.
 Depends: 
     R (>= 3.2.0)
