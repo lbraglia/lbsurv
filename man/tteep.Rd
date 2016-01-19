@@ -49,6 +49,11 @@ db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01"
                  last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01", "1900-12-31", "1900-12-31", NA          , NA)))
 db
 with(db, tteep(start_date, prog_date, death_date, last_fup))
+db2 <- data.frame(start_date = c(0,  0,  0,  0, NA,  0, NA),
+                  prog_date  = c(3,  3, NA, NA, NA, NA, NA),
+                  death_date = c(6, NA,  6, NA, NA, NA, NA),
+                  last_fup   = c(6, 12,  6, 12, 12, NA, NA))
+with(db2, tteep(start_date, prog_date, death_date, last_fup))
 }
 \references{
 Guidance for Industry, Clinical Trial Endpoints for the approval of

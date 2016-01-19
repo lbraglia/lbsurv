@@ -49,19 +49,19 @@ tteep <- function(start_date = NULL,
 {
 
     ## Input check
-    if( is.null(start_date) || !inherits(start_date, 'Date') || !is.numeric(prog_date)) 
+    if( is.null(start_date) || (! (inherits(start_date, 'Date') || (is.numeric(start_date)))))
         stop('start_date must be date or a numeric')
 
-    if( is.null(last_fup) || !inherits(last_fup, 'Date') || !is.numeric(prog_date)) 
+    if( is.null(last_fup) || (! (inherits(last_fup, 'Date') || (is.numeric(last_fup)))))
         stop('last_fup must be date or a numeric')
     
-    if( !is.null(prog_date) && !inherits(prog_date, 'Date') && !is.numeric(prog_date))
+    if( (!is.null(prog_date)) && (!inherits(prog_date, 'Date')) && (!is.numeric(prog_date)))
         stop('prog_date must be NULL, a Date or a numeric')
     
-    if( !is.null(death_date) && !inherits(death_date, 'Date') && !is.numeric(death_date))
+    if( (!is.null(death_date)) && (!inherits(death_date, 'Date')) && (!is.numeric(death_date)))
         stop('death_date must be NULL, a Date or a numeric')
 
-    if( !is.character(ep))
+    if( !is.character(ep) )
         stop('ep must be a character')
     
     ## Create indicator variables if missing
@@ -87,10 +87,8 @@ tteep <- function(start_date = NULL,
     ## Progression Free Survival
     if ("pfs" %in% ep) { 
         rval$pfs_status <- pfs_status <- as.integer(death | prog)
-        min_prog_death <- apply(cbind(death_date, prog_date),
-                                1,
-                                min,
-                                na.rm = TRUE)
+        min_prog_death <- suppressWarnings(
+            apply(cbind(death_date, prog_date), 1, min, na.rm = TRUE))
         ## line that follows is to fix when death_date and prog_date are both
         ## NA (default min returns Inf when na.rm = TRUE)
         min_prog_death[!is.finite(min_prog_death)] <- NA
@@ -100,11 +98,9 @@ tteep <- function(start_date = NULL,
     ## Time to progression
     if ("ttp" %in% ep) {
         rval$ttp_status <- ttp_status <- as.integer(prog)
-        min_death_lfup <- apply(cbind(death_date, last_fup),
-                                1,
-                                min,
-                                na.rm = TRUE)
-        ## as above
+        min_death_lfup <- suppressWarnings(
+            apply(cbind(death_date, last_fup), 1, min, na.rm = TRUE))
+        ## The same as above
         min_death_lfup[!is.finite(min_death_lfup)] <- NA
         ttp_last_date <- ifelse(ttp_status, prog_date, min_death_lfup)
         rval$ttp_time <- ttp_last_date - start_date

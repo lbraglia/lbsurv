@@ -109,6 +109,10 @@ km <- function(time = NULL,
     if (is.null(status)) stop("'status' needed.")
     if (is.null(time)) stop("'time' needed.")
 
+    ## strata
+    if (!is.null(strata) && !is.factor(strata))
+        strata <- factor(strata)
+    
     ## time_by: NULL or numeric
     if(! (is.null(time_by) || is.numeric(time_by)))
         stop("'time_by' must be NULL or numeric")
@@ -166,23 +170,23 @@ km <- function(time = NULL,
             (time_unit %in% 'years'  *   1)
     }
         
-    ## Check if it's a  univariate or stratified and set dataset for estimates
-    ## and parameter defaults accordingly
+    ## Check if it's a univariate or stratified plot; setup the
+    ## estimates dataset and parameter defaults accordingly
     if (is.null(strata)) {
         db <- data.frame(time = time, status = status)
-        db <- na.omit(db)
+        db <- lbmisc::remove_NA(db)
         mod_formula <- survival::Surv(time, status) ~ 1
         univariate <- TRUE
         n_stratas <- 1
         strata_labels <- 'All'
         if (is.null(conf_int)) conf_int <- TRUE
     } else {
-        db <- data.frame(time = time, status = status)
-        db <- na.omit(db)
+        db <- data.frame(time = time, status = status, strata = strata)
+        db <- lbmisc::remove_NA(db)
         mod_formula <- survival::Surv(time, status) ~ strata
         univariate <- FALSE
-        n_stratas <- nlevels(as.factor(strata))
-        strata_labels <- levels(as.factor(strata))
+        n_stratas <- nlevels(strata)
+        strata_labels <- levels(strata)
         if (is.null(conf_int)) conf_int <- FALSE
         if ((n_stratas != 2) & (test == 'hr')) {
             warning(paste0('HR can be plotted only with 2 groups. ',
@@ -196,7 +200,7 @@ km <- function(time = NULL,
     ## -------------------------------------
 
     ## Kaplan-Meyer survival estimate
-    fit <- survival::survfit(mod_formula)
+    fit <- survival::survfit(mod_formula, data = db)
     sfit <- summary(fit)
     
     if( !univariate ) {

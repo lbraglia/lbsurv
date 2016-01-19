@@ -59,4 +59,8 @@ This function plots a Kaplan-Meier plot.
 The function make the hypothesis that times are measured
     in days; in not leave time_unit not specified
 }
+\examples{
+library(survival)
+with(aml, km(time = time, status = status))
+}
 

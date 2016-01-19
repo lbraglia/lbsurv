@@ -2,7 +2,7 @@
 % Please edit documentation in R/km.R
 \name{km_legend}
 \alias{km_legend}
-\title{Make a suitable legend command for km}
+\title{Make a legend command suitable for km}
 \usage{
 km_legend(title, levels, colors, lty, lwd)
 }
@@ -18,6 +18,6 @@ km_legend(title, levels, colors, lty, lwd)
 \item{lwd}{lwd}
 }
 \description{
-Make a suitable legend command for km
+Make a legend command suitable for km
 }
 
