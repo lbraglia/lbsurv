@@ -3,6 +3,7 @@
 export(censor_at)
 export(fup_completeness)
 export(km)
+export(km_legend)
 export(tteep)
 importFrom(lbmisc,add_grid)
 importFrom(lbmisc,pretty_pval)

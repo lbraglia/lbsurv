@@ -1,12 +1,12 @@
-#' Make a suitable legend command for km
+#' Make a legend command suitable for km
 #'
-#' Make a suitable legend command for km
+#' Make a legend command suitable for km
 #'
 #' @param title legend title
 #' @param levels factor levels
 #' @param colors colors
 #' @param lty lty
-#' @param lwd lwdù
+#' @param lwd lwd
 #' @export
 km_legend <- function(title, levels, colors, lty, lwd){
     titl <- deparse(title)
@@ -20,15 +20,10 @@ km_legend <- function(title, levels, colors, lty, lwd){
             titl, lev, cols, lt, lw)
 }
 
-
-
-
-
 #' Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.
 #' 
 #' 
 #' This function plots a Kaplan-Meier plot.
-#' 
 #' 
 #' @param time survival time variable
 #' @param status survival indicator variable
@@ -55,6 +50,9 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #'     Laplan-Meier statistics
 #' @details The function make the hypothesis that times are measured
 #'     in days; in not leave time_unit not specified
+#' @examples
+#' library(survival)
+#' with(aml, km(time = time, status = status))
 #' @export
 km <- function(time = NULL,
                status = NULL,
@@ -78,8 +76,8 @@ km <- function(time = NULL,
                reverse = FALSE,
                ## PLot Confidence interval
                conf_int = NULL,
-               ## Test: none=don't plot tests, logr=logranktest,
-               ##		hr=hazratio,both=both
+               ## Test: none = don't plot tests, logr = logranktest,
+               ##       hr = hazratio, both = both
                test = c('logr','hr','both','none'),
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
@@ -102,7 +100,11 @@ km <- function(time = NULL,
     ##   non vengano tagliate negli at risk 
     ## - inserire il parametro data come specificabile,
     ##   per prendere da un data.frame??
-  
+
+    ## reset default graphical parameters on exit
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    
     ## time, status: check existence
     if (is.null(status)) stop("'status' needed.")
     if (is.null(time)) stop("'time' needed.")
@@ -126,7 +128,7 @@ km <- function(time = NULL,
     if (! is.logical(plot_n_at_risk)) stop("'plot_n_at_risk' must be logical")
 
     ## conf_int: NULL or logical
-    if(! (is.logical(conf_int) || is.null(conf_int)))
+    if(! (is.null(conf_int) || is.logical(conf_int)))
         stop("'conf_int' must be NULL or logical")
     
     ## xlim: NULL or numeric (of length 2)
@@ -136,19 +138,11 @@ km <- function(time = NULL,
     ## xlim: NULL or numeric (of length 2)
     if (! (is.null(ylim) || (is.numeric(ylim) && (2 == length(ylim)))))
         stop("'ylim' must be NULL or numeric vector of 2 elements")
-
-
     
     ## Argument matching, ... 'handling'
     time_unit <- match.arg(time_unit)
     test <- match.arg(test)
     dots <- list(...)
-    
-    ## Restore graph defaults at the end
-    if (plot_n_at_risk) {
-        old.par <- par(no.readonly = TRUE)
-        on.exit(par(old.par))
-    }
     
     ## Time divisor for days for the plot axis
     time_divisor <-
@@ -158,81 +152,64 @@ km <- function(time = NULL,
         (time_unit %in% 'years'  * 365.25)
     
     ## Default xlab and ylab if NULL is provided
-    if (is.null(xlab)) {  ## upcase first letter of time_unit
-        xlab <- paste(toupper(substring(time_unit, 1, 1)),
-                      substring(time_unit, 2),
-                      sep = '')
-    }
-    if (is.null(ylab)) {
-        ylab <- 'Probability'
-    }
+    if (is.null(xlab)) xlab <- paste(toupper(substring(time_unit, 1, 1)),
+                                     substring(time_unit, 2),
+                                     sep = '')
+    if (is.null(ylab)) ylab <- 'Probability'
 
     ## Default time_by if NULL is provided
     if (is.null(time_by)) {
-        time_by <- if('days' == time_unit) {
-            30
-        } else if ('weeks' == time_unit) {
-            4
-        } else if ('months' == time_unit) {
-            12
-        } else if ('years' == time_unit) {
-            1
-        }
+        time_by <-
+            (time_unit %in% 'days'   *  30)  + 
+            (time_unit %in% 'weeks'  *   4)  + 
+            (time_unit %in% 'months' *  12)  + 
+            (time_unit %in% 'years'  *   1)
     }
         
-    ## Check if it's a stratified km and set up a few things
+    ## Check if it's a  univariate or stratified and set dataset for estimates
+    ## and parameter defaults accordingly
     if (is.null(strata)) {
+        db <- data.frame(time = time, status = status)
+        db <- na.omit(db)
+        mod_formula <- survival::Surv(time, status) ~ 1
         univariate <- TRUE
-        stratified <- FALSE
-        n.strata <- 1
-        strata.labels <- c('All')
-        my.formula <- survival::Surv(time, status) ~ 1
+        n_stratas <- 1
+        strata_labels <- 'All'
+        if (is.null(conf_int)) conf_int <- TRUE
     } else {
+        db <- data.frame(time = time, status = status)
+        db <- na.omit(db)
+        mod_formula <- survival::Surv(time, status) ~ strata
         univariate <- FALSE
-        stratified <- TRUE
-        stopifnot(all( ! is.na(strata)) )
-        n.strata <- nlevels(as.factor(strata))
-        strata.labels <- levels(as.factor(strata))
-        my.formula <- survival::Surv(time, status) ~ strata
-    }
-
-    ## Default conf_int if NULL is provided
-    if (is.null(conf_int)) {
-        if (univariate) {
-            conf_int <- TRUE
-        } else {
-            conf_int <- FALSE
+        n_stratas <- nlevels(as.factor(strata))
+        strata_labels <- levels(as.factor(strata))
+        if (is.null(conf_int)) conf_int <- FALSE
+        if ((n_stratas != 2) & (test == 'hr')) {
+            warning(paste0('HR can be plotted only with 2 groups. ',
+                           'Changing to Log-rank tests'))
+            test <- 'logr'
         }
     }
-    
-
-    ## Se si è chiesto un HR, ma gli strati sono piu di 2
-    ## tramutarlo in log rank e dare un warning
-    if ((n.strata !=2) & (test=='hr')) {
-        warning('HR can be plotted only with 2 groups. Changing to Log-rank tests')
-        test <- 'logr'
-    }
-    
 
     ## -------------------------------------
     ## Estimates (km, curve comparison, cox)
     ## -------------------------------------
 
     ## Kaplan-Meyer survival estimate
-    fit <- survival::survfit(my.formula)
+    fit <- survival::survfit(mod_formula)
     sfit <- summary(fit)
     
-    if(stratified) {
+    if( !univariate ) {
         ## Log-rank test
-        logr <- survival::survdiff(my.formula)
-        logr$df <- n.strata-1
-        logr$p <- pchisq( q=logr$chisq, df=logr$df, lower.tail=FALSE )
+        logr <- survival::survdiff(mod_formula)
+        logr$df <- n_stratas - 1
+        logr$p <- pchisq(q = logr$chisq, df = logr$df, lower.tail = FALSE )
         logr.string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
                                logr$chisq, 
                                logr$df, 
                                lbmisc::pretty_pval(logr$p))
-        ## Cox Model (and summary
-        cox <- survival::coxph(my.formula)
+        ## Cox Model (and his summary)
+        cox <- survival::coxph(mod_formula)
         scox <- summary(cox)
         hr.string  <- sprintf('HR=%.3f (95%% CI, %.3f-%.3f)',
                               coefficients(scox)[2],
@@ -255,13 +232,13 @@ km <- function(time = NULL,
     if ( 'col' %in% names(dots)) {
         strata.col <- dots$col
     } else {
-        strata.col <- rep('black', n.strata)
+        strata.col <- rep('black', n_stratas)
     }
 
     ## Se si desidera inserire la tabella dei number at risk
     ## occorre impostare il margine inferiore, prevedendo un tot
     ## di righe opportune (determinate dal numero degli strati) 
-    if (plot_n_at_risk) par('oma'=c(n.strata+1,0,0,0))
+    if (plot_n_at_risk) par('oma'=c(n_stratas+1,0,0,0))
 
     ## xlim definition
     if (is.null(xlim)) {
@@ -308,7 +285,7 @@ km <- function(time = NULL,
     }
 
     ## Add stat string to title
-    if (stratified & (test %in% c('logr','hr','both') )) {
+    if (!univariate && (test %in% c('logr','hr','both') )) {
         mtext(test.string, line=0.2, family='sans', font=3)
     }
 
@@ -316,7 +293,7 @@ km <- function(time = NULL,
     if (plot_n_at_risk) {
 
         ## Print header
-        mtext('At risk', side=1, line=4, adj=1, at=xlim.inf,font=2)
+        mtext('At risk', side = 1, line = 4, adj = 1, at = xlim.inf, font = 2)
 
         ## Utilizzo axis per plottare gli a rischio negli strati
         ## (la linea utilizzabile in presenza di titolo di asse
@@ -326,7 +303,7 @@ km <- function(time = NULL,
         my.time <- summary(fit, times = times, extend=TRUE)$time
         n.risk <- summary(fit, times = times, extend=TRUE)$n.risk
         if (univariate) {
-            strata <- rep(strata.labels, length(my.time))
+            strata <- rep(strata_labels, length(my.time))
         } else {
             strata <- summary(fit, times = times, extend =TRUE)$strata
         }
@@ -345,7 +322,7 @@ km <- function(time = NULL,
         ## dei colori è necessario riordinare la lista
         
         spl.risk.data <- split( risk.data, risk.data$strata)
-        spl.risk.data <- spl.risk.data[ strata.labels ]
+        spl.risk.data <- spl.risk.data[ strata_labels ]
 
         for( label in names(spl.risk.data) ) {
             prog <- which( names(spl.risk.data) %in% label ) 
@@ -353,20 +330,29 @@ km <- function(time = NULL,
             group.line.num <- group.line.lab - 1
             group.col <- strata.col[prog]
             ## plot label del gruppo
-            mtext(	label, side=1, line=group.line.lab, 
-                  at=xlim.inf, adj=1, col=group.col) 
+            mtext(label,
+                  side = 1,
+                  line = group.line.lab, 
+                  at = xlim.inf,
+                  adj = 1,
+                  col = group.col) 
             ## plot dati per ogni time_by
-            axis(1, at=times, labels=spl.risk.data[[label]]$n.risk,
-                 line=group.line.num ,tick=FALSE, col.axis=group.col) 
+            axis(1,
+                 at = times,
+                 labels = spl.risk.data[[label]]$n.risk,
+                 line = group.line.num,
+                 tick = FALSE,
+                 col.axis = group.col) 
         }
 
     }
 
     ## Return Stats wheter or not plot has been done
     if (univariate) {
-        invisible(list('km'=fit))
+        invisible(list('km' = fit))
     } else {
-        invisible(list('km'=fit,'logrank'=logr, 'cox'=cox, 'scox'=scox))
+        invisible(list('km' = fit,'logrank' = logr,
+                       'cox' = cox, 'scox' = scox))
     }
     
 }

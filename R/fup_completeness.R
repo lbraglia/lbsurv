@@ -30,35 +30,31 @@ fup_completeness <- function(time = NULL,
                              strata = NULL) {
   ## input validation
   if (! is.numeric(time))
-    stop("time is mandatory and must be numeric.")
+    stop('time is mandatory and must be numeric.')
   if (! is.numeric(status))
-    stop("status is mandatory and must be numeric.")
+    stop('status is mandatory and must be numeric.')
   if (! is.numeric(cutoff))
-    stop("censoring_time is mandatory and must be numeric.")
+    stop('censoring_time is mandatory and must be numeric.')
   
   ## censoring to cutoff ...
   db <- censor_at(time = time,
                   status = status,
                   censoring_time = cutoff)
-  names(db) <- c("time","status")
+  names(db) <- c('time', 'status')
   db$potential_fup <- ifelse(db$status == 0, cutoff, db$time)
 
   ## global and individual C
-  res <- list("globalC" = sum(db$time) / sum(db$potential_fup),
-              "individualC" = db$time / db$potential_fup )
+  rval <- list('globalC' = sum(db$time) / sum(db$potential_fup),
+               'individualC' = db$time / db$potential_fup )
 
   ## strata C
   if (!is.null(strata)){
-    agg <- aggregate(db[c("time","potential_fup")],
+    agg <- aggregate(db[c('time', 'potential_fup')],
                      by = list(strata),
                      FUN = sum )
     agg$strataC <- agg[,2]/agg[,3]
-    res$strataC <-  agg
+    rval$strataC <-  agg
   }
 
-  return(res)
+  return(rval)
 }
-
-
-
-
