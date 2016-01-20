@@ -233,7 +233,7 @@ km <- function(time = NULL,
     ## CI <- data.frame((unclass(sfit))[c('time', 'lower', 'upper')])
     ## CI_spl <- if (univariate) list('All' = CI)
     ##           else  split(CI, f = sfit$strata)
-    
+
     ## ------------
     ## Plot section
     ## ------------
