@@ -38,7 +38,7 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #'     time_unit will be provided
 #' @param ylim Y-axis limit. Default to c(0,1) be provided
 #' @param reverse plot cumulative events
-#' @param conf_int logical ... Plot confidence intervall? If NULL
+#' @param conf_int logical . Plot confidence intervall? If NULL
 #'     confidence interval are plotted only if strata has two or more
 #'     levels
 #' @param test tests: 'none' = don't plot tests, 'logr' = log-rank test,
@@ -205,27 +205,27 @@ km <- function(time = NULL,
     
     if( !univariate ) {
         ## Log-rank test
-        logr <- survival::survdiff(mod_formula)
+        logr <- survival::survdiff(mod_formula, data = db)
         logr$df <- n_stratas - 1
-        logr$p <- pchisq(q = logr$chisq, df = logr$df, lower.tail = FALSE )
-        logr.string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
+        logr$p <- pchisq(q = logr$chisq, df = logr$df, lower.tail = FALSE)
+        logr_string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
                                logr$chisq, 
                                logr$df, 
                                lbmisc::pretty_pval(logr$p))
         ## Cox Model (and his summary)
-        cox <- survival::coxph(mod_formula)
+        cox <- survival::coxph(mod_formula, data = db)
         scox <- summary(cox)
-        hr.string  <- sprintf('HR=%.3f (95%% CI, %.3f-%.3f)',
+        hr_string  <- sprintf('HR=%.3f (95%% CI, %.3f-%.3f)',
                               coefficients(scox)[2],
                               scox$conf.int[3],
                               scox$conf.int[4])
-        both.string <- paste(logr.string, hr.string, sep=' - ')
+        both_string <- paste(logr_string, hr_string, sep = ' - ')
 	
         ## Choose which stat to print in the graph
-        test.string <- switch(test,
-                              logr = logr.string,
-                              hr = hr.string,
-                              both= both.string) 
+        test_string <- switch(test,
+                              logr = logr_string,
+                              hr = hr_string,
+                              both= both_string) 
     }
 
     ## ------------
@@ -233,54 +233,46 @@ km <- function(time = NULL,
     ## ------------
 
     ## Color set-up: if given, otherwise set it black
-    if ( 'col' %in% names(dots)) {
-        strata.col <- dots$col
-    } else {
-        strata.col <- rep('black', n_stratas)
-    }
+    strata_col <- if ('col' %in% names(dots)) dots$col
+                  else rep('black', n_stratas)
 
     ## Se si desidera inserire la tabella dei number at risk
     ## occorre impostare il margine inferiore, prevedendo un tot
     ## di righe opportune (determinate dal numero degli strati) 
-    if (plot_n_at_risk) par('oma'=c(n_stratas+1,0,0,0))
+    if (plot_n_at_risk) par('oma' = c(n_stratas + 1, 0, 0, 0))
 
     ## xlim definition
     if (is.null(xlim)) {
-        xlim.inf <-  -(max(fit$time)/15)
-        xlim.sup <- max(fit$time) + (- xlim.inf/3)
+        xlim_inf <-  -(max(fit$time)/15)
+        xlim_sup <- max(fit$time) + (- xlim_inf/3)
     } else {
-        xlim.inf <- xlim[1]
-        xlim.sup <- xlim[2]
+        xlim_inf <- xlim[1]
+        xlim_sup <- xlim[2]
     }
         
     ## Axis'n grid: 
     ## y defaults are ok 
     ## x has to be based on time_by, if specified
     ## if not specified make 4 step
-    if (is.null(time_by)) {
-        times <- seq(0, max(fit$time), length=4)
-    } else {
-        times <- seq(0, max(fit$time), by=time_by*time_divisor)
-    }
-
+    times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
+             else seq(0, max(fit$time), by = time_by * time_divisor)
     
     ## Main plotting section
     plot(NA,NA, 
-         xlim=c(xlim.inf, xlim.sup), 
-         ylim=ylim,
-         axes=F,
-         ylab=ylab,
-         xlab=xlab,
-         main=main
-         )
+         xlim = c(xlim_inf, xlim_sup), 
+         ylim = ylim,
+         axes = FALSE,
+         ylab = ylab,
+         xlab = xlab,
+         main = main)
     axis(2)		
-    axis(1, at=times, labels=times/time_divisor)
-    lbmisc::add_grid(at.y=axTicks(2), at.x=times)
+    axis(1, at = times, labels = times/time_divisor)
+    lbmisc::add_grid(at_y = axTicks(2), at_x = times)
     box()
     if (reverse) {
-      lines(fit, fun = 'event', conf.int=conf_int,  ...)
+      lines(fit, fun = 'event', conf.int = conf_int,  ...)
     } else {
-      lines(fit, conf.int=conf_int, ...)
+      lines(fit, conf.int = conf_int, ...)
     }
     
     ## Add legend
@@ -290,63 +282,63 @@ km <- function(time = NULL,
 
     ## Add stat string to title
     if (!univariate && (test %in% c('logr','hr','both') )) {
-        mtext(test.string, line=0.2, family='sans', font=3)
+        mtext(test_string, line = 0.2, family = 'sans', font = 3)
     }
 
     ## Add number at risk
     if (plot_n_at_risk) {
 
         ## Print header
-        mtext('At risk', side = 1, line = 4, adj = 1, at = xlim.inf, font = 2)
+        mtext('At risk', side = 1, line = 4, adj = 1, at = xlim_inf, font = 2)
 
         ## Utilizzo axis per plottare gli a rischio negli strati
         ## (la linea utilizzabile in presenza di titolo di asse
         ## delle x e' dalla 4 in poi: la 4 e' per il titolo, dalla 5
         ## in poi per i dati
         
-        my.time <- summary(fit, times = times, extend=TRUE)$time
-        n.risk <- summary(fit, times = times, extend=TRUE)$n.risk
+        my_time <- summary(fit, times = times, extend = TRUE)$time
+        n_risk <- summary(fit, times = times, extend = TRUE)$n.risk
         if (univariate) {
-            strata <- rep(strata_labels, length(my.time))
+            strata <- rep(strata_labels, length(my_time))
         } else {
-            strata <- summary(fit, times = times, extend =TRUE)$strata
+            strata <- summary(fit, times = times, extend = TRUE)$strata
         }
         
-        risk.data <- data.frame(strata = strata,
-                                time = my.time,
-                                n.risk = n.risk)
+        risk_data <- data.frame(strata = strata,
+                                time = my_time,
+                                n_risk = n_risk)
         if (!univariate) {
-            levels(risk.data$strata) <- sub('(^strata=)(.*$)',
+            levels(risk_data$strata) <- sub('(^strata=)(.*$)',
                                             '\\2', 
-                                            levels(risk.data$strata))
+                                            levels(risk_data$strata))
         }
         
         ## Lo split pone i dati nell'ordine della lista
         ## nell'ordine dei dati, quindi per coerenza con l'ordine
         ## dei colori e' necessario riordinare la lista
         
-        spl.risk.data <- split( risk.data, risk.data$strata)
-        spl.risk.data <- spl.risk.data[ strata_labels ]
+        spl_risk_data <- split( risk_data, risk_data$strata)
+        spl_risk_data <- spl_risk_data[ strata_labels ]
 
-        for( label in names(spl.risk.data) ) {
-            prog <- which( names(spl.risk.data) %in% label ) 
-            group.line.lab <- 4 + prog
-            group.line.num <- group.line.lab - 1
-            group.col <- strata.col[prog]
+        for( label in names(spl_risk_data) ) {
+            prog <- which( names(spl_risk_data) %in% label ) 
+            group_line_lab <- 4 + prog
+            group_line_num <- group_line_lab - 1
+            group_col <- strata_col[prog]
             ## plot label del gruppo
             mtext(label,
                   side = 1,
-                  line = group.line.lab, 
-                  at = xlim.inf,
+                  line = group_line_lab, 
+                  at = xlim_inf,
                   adj = 1,
-                  col = group.col) 
+                  col = group_col) 
             ## plot dati per ogni time_by
             axis(1,
                  at = times,
-                 labels = spl.risk.data[[label]]$n.risk,
-                 line = group.line.num,
+                 labels = spl_risk_data[[label]]$n_risk,
+                 line = group_line_num,
                  tick = FALSE,
-                 col.axis = group.col) 
+                 col.axis = group_col) 
         }
 
     }
@@ -355,8 +347,10 @@ km <- function(time = NULL,
     if (univariate) {
         invisible(list('km' = fit))
     } else {
-        invisible(list('km' = fit,'logrank' = logr,
-                       'cox' = cox, 'scox' = scox))
+        invisible(list('km' = fit,
+                       'logrank' = logr,
+                       'cox' = cox,
+                       'scox' = scox))
     }
     
 }
