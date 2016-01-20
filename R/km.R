@@ -20,6 +20,10 @@ km_legend <- function(title, levels, colors, lty, lwd){
             titl, lev, cols, lt, lw)
 }
 
+
+
+
+
 #' Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.
 #' 
 #' 
@@ -38,9 +42,7 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #'     time_unit will be provided
 #' @param ylim Y-axis limit. Default to c(0,1) be provided
 #' @param reverse plot cumulative events
-#' @param conf_int logical . Plot confidence intervall? If NULL
-#'     confidence interval are plotted only if strata has two or more
-#'     levels
+#' @param conf_int character. Can be 'default', 'none' or 'lines'
 #' @param test tests: 'none' = don't plot tests, 'logr' = log-rank test,
 #'     'hr' = hazard ratio, 'both' = log-rank test and hazard ratio
 #' @param plot_n_at_risk Logical value: plot number at risk?
@@ -75,7 +77,7 @@ km <- function(time = NULL,
                ## plot cumulative events?
                reverse = FALSE,
                ## PLot Confidence interval
-               conf_int = NULL,
+               conf_int = c('default', 'none', 'lines'), #, 'shades'),
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
                test = c('logr','hr','both','none'),
@@ -84,8 +86,8 @@ km <- function(time = NULL,
                ## Graph command to add legend, as string
                legend_cmd = NULL,
                ## Further lines.survfit params
-               ...                     
-               ){
+               ...)
+{
 
     ## TODO
     ## - permettere al plot di incastrarsi in un mfrow specificato a monte
@@ -132,8 +134,7 @@ km <- function(time = NULL,
     if (! is.logical(plot_n_at_risk)) stop("'plot_n_at_risk' must be logical")
 
     ## conf_int: NULL or logical
-    if(! (is.null(conf_int) || is.logical(conf_int)))
-        stop("'conf_int' must be NULL or logical")
+    conf_int <- match.arg(conf_int)
     
     ## xlim: NULL or numeric (of length 2)
     if (! (is.null(xlim) || (is.numeric(xlim) && (2 == length(xlim)))))
@@ -179,7 +180,7 @@ km <- function(time = NULL,
         univariate <- TRUE
         n_stratas <- 1
         strata_labels <- 'All'
-        if (is.null(conf_int)) conf_int <- TRUE
+        if ('default' %in% conf_int) conf_int <- 'lines'
     } else {
         db <- data.frame(time = time, status = status, strata = strata)
         db <- lbmisc::NA_remove(db)
@@ -187,7 +188,7 @@ km <- function(time = NULL,
         univariate <- FALSE
         n_stratas <- nlevels(strata)
         strata_labels <- levels(strata)
-        if (is.null(conf_int)) conf_int <- FALSE
+        if ('default' %in% conf_int) conf_int <- 'none'
         if ((n_stratas != 2) & (test == 'hr')) {
             warning(paste0('HR can be plotted only with 2 groups. ',
                            'Changing to Log-rank tests'))
@@ -228,6 +229,11 @@ km <- function(time = NULL,
                               both= both_string) 
     }
 
+    ## obtain data for confidence intervals
+    ## CI <- data.frame((unclass(sfit))[c('time', 'lower', 'upper')])
+    ## CI_spl <- if (univariate) list('All' = CI)
+    ##           else  split(CI, f = sfit$strata)
+    
     ## ------------
     ## Plot section
     ## ------------
@@ -269,10 +275,27 @@ km <- function(time = NULL,
     axis(1, at = times, labels = times/time_divisor)
     lbmisc::add_grid(at_y = axTicks(2), at_x = times)
     box()
+    ## main line and confidence intervals
     if (reverse) {
-      lines(fit, fun = 'event', conf.int = conf_int,  ...)
+        lines_fun <- 'event'
+        switch(conf_int,
+               none  = lines(fit, fun = lines_fun, conf.int = FALSE,  ...),
+               lines = lines(fit, fun = lines_fun, conf.int = TRUE,   ...))
     } else {
-      lines(fit, conf.int = conf_int, ...)
+        switch(conf_int,
+               none  = lines(fit, conf.int = FALSE,  ...),
+               lines = lines(fit, conf.int = TRUE,   ...)## ,
+               ## shades = {
+               ##     ## lines(fit, conf.int = TRUE,  ...)
+               ##     lapply(CI_spl, function(x)
+               ##         polygon(c(x$time,  rev(x$time)),
+               ##                 c(x$lower, rev(x$upper)),
+               ##                 col = "grey90",
+               ##                 border = FALSE))
+               ##     lines(fit, conf.int = FALSE)
+               ##     ## with(fit, lines(time, surv, type = "s"))
+               ## }
+               )
     }
     
     ## Add legend
@@ -320,7 +343,7 @@ km <- function(time = NULL,
         spl_risk_data <- split( risk_data, risk_data$strata)
         spl_risk_data <- spl_risk_data[ strata_labels ]
 
-        for( label in names(spl_risk_data) ) {
+        for(label in names(spl_risk_data) ) {
             prog <- which( names(spl_risk_data) %in% label ) 
             group_line_lab <- 4 + prog
             group_line_num <- group_line_lab - 1
