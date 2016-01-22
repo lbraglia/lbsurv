@@ -7,8 +7,8 @@
 km(time = NULL, status = NULL, strata = NULL, time_unit = c("days",
   "weeks", "months", "years"), time_by = NULL, main = "", ylab = NULL,
   xlab = NULL, ylim = c(0L, 1L), xlim = NULL, reverse = FALSE,
-  conf_int = NULL, test = c("logr", "hr", "both", "none"),
-  plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
+  conf_int = c("default", "none", "lines", "shades"), test = c("logr", "hr",
+  "both", "none"), plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -35,9 +35,7 @@ time_unit will be provided}
 
 \item{reverse}{plot cumulative events}
 
-\item{conf_int}{logical ... Plot confidence intervall? If NULL
-confidence interval are plotted only if strata has two or more
-levels}
+\item{conf_int}{character. Can be 'default', 'none' or 'lines'}
 
 \item{test}{tests: 'none' = don't plot tests, 'logr' = log-rank test,
 'hr' = hazard ratio, 'both' = log-rank test and hazard ratio}

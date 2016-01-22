@@ -20,10 +20,6 @@ km_legend <- function(title, levels, colors, lty, lwd){
             titl, lev, cols, lt, lw)
 }
 
-
-
-
-
 #' Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.
 #' 
 #' 
@@ -77,7 +73,7 @@ km <- function(time = NULL,
                ## plot cumulative events?
                reverse = FALSE,
                ## PLot Confidence interval
-               conf_int = c('default', 'none', 'lines'), #, 'shades'),
+               conf_int = c('default', 'none', 'lines', 'shades'),
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
                test = c('logr','hr','both','none'),
@@ -230,9 +226,9 @@ km <- function(time = NULL,
     }
 
     ## obtain data for confidence intervals
-    ## CI <- data.frame((unclass(sfit))[c('time', 'lower', 'upper')])
-    ## CI_spl <- if (univariate) list('All' = CI)
-    ##           else  split(CI, f = sfit$strata)
+    CI <- data.frame((unclass(sfit))[c('time', 'lower', 'upper')])
+    CI_spl <- if (univariate) list('All' = CI)
+              else  split(CI, f = sfit$strata)
 
     ## ------------
     ## Plot section
@@ -273,7 +269,7 @@ km <- function(time = NULL,
          main = main)
     axis(2)		
     axis(1, at = times, labels = times/time_divisor)
-    lbmisc::add_grid(at_y = axTicks(2), at_x = times)
+    lbmisc::add_grid(at_x = times, at_y = axTicks(2))
     box()
     ## main line and confidence intervals
     if (reverse) {
@@ -285,16 +281,16 @@ km <- function(time = NULL,
         switch(conf_int,
                none  = lines(fit, conf.int = FALSE,  ...),
                lines = lines(fit, conf.int = TRUE,   ...)## ,
-               ## shades = {
-               ##     ## lines(fit, conf.int = TRUE,  ...)
-               ##     lapply(CI_spl, function(x)
-               ##         polygon(c(x$time,  rev(x$time)),
-               ##                 c(x$lower, rev(x$upper)),
-               ##                 col = "grey90",
-               ##                 border = FALSE))
-               ##     lines(fit, conf.int = FALSE)
-               ##     ## with(fit, lines(time, surv, type = "s"))
-               ## }
+               , shades = {
+                   ## lines(fit, conf.int = TRUE,  ...)
+                   lapply(CI_spl, function(x)
+                       polygon(c(x$time,  rev(x$time)),
+                               c(x$lower, rev(x$upper)),
+                               col = "grey90",
+                               border = FALSE))
+                   lines(fit, conf.int = FALSE)
+                   ## with(fit, lines(time, surv, type = "s"))
+               }
                )
     }
     
