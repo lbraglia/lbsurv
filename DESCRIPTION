@@ -1,6 +1,6 @@
 Package: lbsurv
 Title: Survival Analysis Utility Functions
-Version: 0.1
+Version: 0.1.1
 Authors@R: person('Luca', 'Braglia', email = 'lbraglia@mailbox.org',
                   role = c('aut', 'cre'))
 Description: Survival analysis utility functions.
