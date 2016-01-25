@@ -14,8 +14,8 @@ test_that("fup completeness basic usage", {
                   'strataC' = data.frame('Group.1'       = c("A", "B"),
                                          'time'          = c(192, 400),
                                          'potential_fup' = c(212, 400),
-                                         'strataC' = c(0.905660377358491, 1)))
-    
+                                         'strataC' = c(0.905660377358491, 1),
+                                         stringsAsFactors = FALSE))
     expect_equal(res, right)
     
 })
