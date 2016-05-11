@@ -100,8 +100,8 @@ km <- function(time = NULL,
     ##   per prendere da un data.frame??
 
     ## reset default graphical parameters on exit
-    old_par <- par(no.readonly = TRUE)
-    on.exit(par(old_par))
+    old_par <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(old_par))
     
     ## time, status: check existence
     if (is.null(status)) stop("'status' needed.")
@@ -204,7 +204,8 @@ km <- function(time = NULL,
         ## Log-rank test
         logr <- survival::survdiff(mod_formula, data = db)
         logr$df <- n_stratas - 1
-        logr$p <- pchisq(q = logr$chisq, df = logr$df, lower.tail = FALSE)
+        logr$p <- stats::pchisq(q = logr$chisq, df = logr$df,
+                                lower.tail = FALSE)
         logr_string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
                                logr$chisq, 
                                logr$df, 
@@ -213,7 +214,7 @@ km <- function(time = NULL,
         cox <- survival::coxph(mod_formula, data = db)
         scox <- summary(cox)
         hr_string  <- sprintf('HR=%.3f (95%% CI, %.3f-%.3f)',
-                              coefficients(scox)[2],
+                              stats::coefficients(scox)[2],
                               scox$conf.int[3],
                               scox$conf.int[4])
         both_string <- paste(logr_string, hr_string, sep = ' - ')
@@ -241,7 +242,7 @@ km <- function(time = NULL,
     ## Se si desidera inserire la tabella dei number at risk
     ## occorre impostare il margine inferiore, prevedendo un tot
     ## di righe opportune (determinate dal numero degli strati) 
-    if (plot_n_at_risk) par('oma' = c(n_stratas + 1, 0, 0, 0))
+    if (plot_n_at_risk) graphics::par('oma' = c(n_stratas + 1, 0, 0, 0))
 
     ## xlim definition
     if (is.null(xlim)) {
@@ -260,36 +261,37 @@ km <- function(time = NULL,
              else seq(0, max(fit$time), by = time_by * time_divisor)
     
     ## Main plotting section
-    plot(NA,NA, 
-         xlim = c(xlim_inf, xlim_sup), 
-         ylim = ylim,
-         axes = FALSE,
-         ylab = ylab,
-         xlab = xlab,
-         main = main)
-    axis(2)		
-    axis(1, at = times, labels = times/time_divisor)
-    lbmisc::add_grid(at_x = times, at_y = axTicks(2))
-    box()
+    graphics::plot(NA, NA,
+                   xlim = c(xlim_inf, xlim_sup),
+                   ylim = ylim,
+                   axes = FALSE,
+                   ylab = ylab,
+                   xlab = xlab,
+                   main = main)
+    graphics::axis(2)
+    graphics::axis(1, at = times, labels = times/time_divisor)
+    lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
+    graphics::box()
     ## main line and confidence intervals
     if (reverse) {
         lines_fun <- 'event'
         switch(conf_int,
-               none  = lines(fit, fun = lines_fun, conf.int = FALSE,  ...),
-               lines = lines(fit, fun = lines_fun, conf.int = TRUE,   ...))
+               none  = graphics::lines(fit, fun = lines_fun,
+                                       conf.int = FALSE,  ...),
+               lines = graphics::lines(fit, fun = lines_fun,
+                                       conf.int = TRUE,   ...))
     } else {
         switch(conf_int,
-               none  = lines(fit, conf.int = FALSE,  ...),
-               lines = lines(fit, conf.int = TRUE,   ...)## ,
-               , shades = {
+               none  = graphics::lines(fit, conf.int = FALSE, ...),
+               lines = graphics::lines(fit, conf.int = TRUE, ...),
+               shades = {
                    ## lines(fit, conf.int = TRUE,  ...)
                    lapply(CI_spl, function(x)
-                       polygon(c(x$time,  rev(x$time)),
-                               c(x$lower, rev(x$upper)),
-                               col = "grey90",
-                               border = FALSE))
-                   lines(fit, conf.int = FALSE)
-                   ## with(fit, lines(time, surv, type = "s"))
+                       graphics::polygon(c(x$time,  rev(x$time)),
+                                         c(x$lower, rev(x$upper)),
+                                         col = "grey90",
+                                         border = FALSE))
+                   graphics::lines(fit, conf.int = FALSE)
                }
                )
     }
@@ -301,14 +303,15 @@ km <- function(time = NULL,
 
     ## Add stat string to title
     if (!univariate && (test %in% c('logr','hr','both') )) {
-        mtext(test_string, line = 0.2, family = 'sans', font = 3)
+        graphics::mtext(test_string, line = 0.2, family = 'sans', font = 3)
     }
 
     ## Add number at risk
     if (plot_n_at_risk) {
 
         ## Print header
-        mtext('At risk', side = 1, line = 4, adj = 1, at = xlim_inf, font = 2)
+        graphics::mtext('At risk', side = 1, line = 4, adj = 1,
+                        at = xlim_inf, font = 2)
 
         ## Utilizzo axis per plottare gli a rischio negli strati
         ## (la linea utilizzabile in presenza di titolo di asse
@@ -345,19 +348,19 @@ km <- function(time = NULL,
             group_line_num <- group_line_lab - 1
             group_col <- strata_col[prog]
             ## plot label del gruppo
-            mtext(label,
-                  side = 1,
-                  line = group_line_lab, 
-                  at = xlim_inf,
-                  adj = 1,
-                  col = group_col) 
+            graphics::mtext(label,
+                            side = 1,
+                            line = group_line_lab,
+                            at = xlim_inf,
+                            adj = 1,
+                            col = group_col)
             ## plot dati per ogni time_by
-            axis(1,
-                 at = times,
-                 labels = spl_risk_data[[label]]$n_risk,
-                 line = group_line_num,
-                 tick = FALSE,
-                 col.axis = group_col) 
+            graphics::axis(1,
+                           at = times,
+                           labels = spl_risk_data[[label]]$n_risk,
+                           line = group_line_num,
+                           tick = FALSE,
+                           col.axis = group_col)
         }
 
     }
