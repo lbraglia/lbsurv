@@ -6,6 +6,7 @@
 #' @param status event indicator
 #' @param cutoff (in days?)
 #' @param strata group
+#' @param individual_index return individual indexes
 #' @return A list with individual global C-index, strata C-indexes
 #' (optional), and individual C-indexes
 #' @references Clark T., Altman D., De Stavola B. (2002),
@@ -27,7 +28,8 @@
 fup_completeness <- function(time = NULL,
                              status = NULL,
                              cutoff = NULL,
-                             strata = NULL) {
+                             strata = NULL,
+                             individual_index = FALSE) {
   ## input validation
   if (! is.numeric(time))
     stop('time is mandatory and must be numeric.')
@@ -56,5 +58,6 @@ fup_completeness <- function(time = NULL,
     rval$strataC <-  agg
   }
 
-  return(rval)
+  rval_index <- c(TRUE, individual_index, TRUE)
+  return(rval[rval_index])
 }

@@ -5,7 +5,7 @@
 \title{Calculate C index of of follow up completeness}
 \usage{
 fup_completeness(time = NULL, status = NULL, cutoff = NULL,
-  strata = NULL)
+  strata = NULL, individual_index = FALSE)
 }
 \arguments{
 \item{time}{Follow up (in days?)}
@@ -15,6 +15,8 @@ fup_completeness(time = NULL, status = NULL, cutoff = NULL,
 \item{cutoff}{(in days?)}
 
 \item{strata}{group}
+
+\item{individual_index}{return individual indexes}
 }
 \value{
 A list with individual global C-index, strata C-indexes
