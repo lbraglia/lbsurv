@@ -4,8 +4,8 @@
 \alias{fup_completeness}
 \title{Calculate C index of of follow up completeness}
 \usage{
-fup_completeness(time = NULL, status = NULL, cutoff = NULL,
-  strata = NULL, individual_index = FALSE)
+fup_completeness(time = NULL, status = NULL, cutoff = seq(1, max(time),
+  length = 10), strata = NULL)
 }
 \arguments{
 \item{time}{Follow up (in days?)}
@@ -15,12 +15,9 @@ fup_completeness(time = NULL, status = NULL, cutoff = NULL,
 \item{cutoff}{(in days?)}
 
 \item{strata}{group}
-
-\item{individual_index}{return individual indexes}
 }
 \value{
-A list with individual global C-index, strata C-indexes
-(optional), and individual C-indexes
+A data.frame with a global C and a C for each group
 }
 \description{
 Calculate C index of of follow up completeness.
@@ -35,7 +32,9 @@ group  <- c("A","A", "B", "B" )
 ## quantify fup completeness to 200 days (eg minimum potential
 ## follow up in a hypotethic prospective trial)
 
-fup_completeness(time = time, status = status, cutoff = 200, strata = group)
+fup_completeness(time = time, status = status,
+                 cutoff = seq(150, 250, 10),
+                 strata = group)
 
 }
 \references{
