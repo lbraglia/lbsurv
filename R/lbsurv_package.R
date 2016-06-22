@@ -21,4 +21,5 @@
 #' @importFrom survival coxph
 #' @importFrom survival survdiff
 #' @importFrom survival survfit
+#' @importFrom xtable xtable
 NULL

@@ -38,6 +38,7 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #'     time_unit will be provided
 #' @param ylim Y-axis limit. Default to c(0,1) be provided
 #' @param reverse plot cumulative events
+#' @param mark_censored mark censored observation
 #' @param conf_int character. Can be 'default', 'none' or 'lines'
 #' @param test tests: 'none' = don't plot tests, 'logr' = log-rank test,
 #'     'hr' = hazard ratio, 'both' = log-rank test and hazard ratio
@@ -72,11 +73,13 @@ km <- function(time = NULL,
                xlim = NULL,
                ## plot cumulative events?
                reverse = FALSE,
-               ## PLot Confidence interval
+               ## mark censored observation
+               mark_censored = TRUE,
+               ## Plot Confidence interval
                conf_int = c('default', 'none', 'lines', 'shades'),
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
-               test = c('logr','hr','both','none'),
+               test = c('logr', 'hr', 'both', 'none'),
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
                ## Graph command to add legend, as string
@@ -209,7 +212,7 @@ km <- function(time = NULL,
         logr_string <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
                                logr$chisq, 
                                logr$df, 
-                               lbmisc::pretty_pval(logr$p))
+                               lbmisc::pretty_pval(logr$p, equal = TRUE))
         ## Cox Model (and his summary)
         cox <- survival::coxph(mod_formula, data = db)
         scox <- summary(cox)
@@ -276,14 +279,25 @@ km <- function(time = NULL,
     if (reverse) {
         lines_fun <- 'event'
         switch(conf_int,
-               none  = graphics::lines(fit, fun = lines_fun,
-                                       conf.int = FALSE,  ...),
-               lines = graphics::lines(fit, fun = lines_fun,
-                                       conf.int = TRUE,   ...))
+               none  = graphics::lines(fit,
+                                       fun = lines_fun,
+                                       conf.int = FALSE,
+                                       ...),
+               lines = graphics::lines(fit,
+                                       fun = lines_fun,
+                                       conf.int = TRUE,
+
+                                       ...))
     } else {
         switch(conf_int,
-               none  = graphics::lines(fit, conf.int = FALSE, ...),
-               lines = graphics::lines(fit, conf.int = TRUE, ...),
+               none  = graphics::lines(fit,
+                                       conf.int = FALSE,
+                                       mark.time = mark_censored,
+                                       ...),
+               lines = graphics::lines(fit,
+                                       conf.int = TRUE,
+                                       mark.time = mark_censored,
+                                       ...),
                shades = {
                    ## lines(fit, conf.int = TRUE,  ...)
                    lapply(CI_spl, function(x)
@@ -291,7 +305,10 @@ km <- function(time = NULL,
                                          c(x$lower, rev(x$upper)),
                                          col = "grey90",
                                          border = FALSE))
-                   graphics::lines(fit, conf.int = FALSE)
+                   graphics::lines(fit,
+                                   conf.int = FALSE,
+                                   mark.time = mark_censored
+                                   )
                }
                )
     }
