@@ -6,9 +6,7 @@
 #' @param status event indicator
 #' @param cutoff (in days?)
 #' @param strata group
-#' @param individual_index return individual indexes
-#' @return A list with individual global C-index, strata C-indexes
-#' (optional), and individual C-indexes
+#' @return A data.frame with a global C and a C for each group
 #' @references Clark T., Altman D., De Stavola B. (2002),
 #' Quantification of the completeness of follow-up. Lancet 2002;
 #' 359: 1309-10
@@ -22,42 +20,48 @@
 #' ## quantify fup completeness to 200 days (eg minimum potential
 #' ## follow up in a hypotethic prospective trial)
 #' 
-#' fup_completeness(time = time, status = status, cutoff = 200, strata = group)
+#' fup_completeness(time = time, status = status,
+#'                  cutoff = seq(150, 250, 10),
+#'                  strata = group)
 #' 
 #' @export
 fup_completeness <- function(time = NULL,
                              status = NULL,
-                             cutoff = NULL,
-                             strata = NULL,
-                             individual_index = FALSE) {
-  ## input validation
-  if (! is.numeric(time))
-    stop('time is mandatory and must be numeric.')
-  if (! is.numeric(status))
-    stop('status is mandatory and must be numeric.')
-  if (! is.numeric(cutoff))
-    stop('censoring_time is mandatory and must be numeric.')
-  
-  ## censoring to cutoff ...
-  db <- censor_at(time = time,
-                  status = status,
-                  censoring_time = cutoff)
-  names(db) <- c('time', 'status')
-  db$potential_fup <- ifelse(db$status == 0, cutoff, db$time)
+                             cutoff = seq(1, max(time), length = 10),
+                             strata = NULL)
+{
+    ## input validation
+    if (! is.numeric(time))
+        stop('time is mandatory and must be numeric.')
+    if (! is.numeric(status))
+        stop('status is mandatory and must be numeric.')
+    if (! is.numeric(cutoff))
+        stop('censoring_time is mandatory and must be numeric.')
 
-  ## global and individual C
-  rval <- list('globalC' = sum(db$time) / sum(db$potential_fup),
-               'individualC' = db$time / db$potential_fup )
+    rval <- lapply(cutoff, function(x){
 
-  ## strata C
-  if (!is.null(strata)){
-    agg <- aggregate(db[c('time', 'potential_fup')],
-                     by = list(strata),
-                     FUN = sum )
-    agg$strataC <- agg[,2]/agg[,3]
-    rval$strataC <-  agg
-  }
-
-  rval_index <- c(TRUE, individual_index, TRUE)
-  return(rval[rval_index])
+        db <- censor_at(time = time,
+                        status = status,
+                        censoring_time = x)
+        names(db) <- c('time', 'status')
+        db$potential_fup <- ifelse(db$status == 0, x, db$time)
+        
+        ## global and individual C
+        res <- data.frame('time' = x,
+                          'overall' = sum(db$time) / sum(db$potential_fup))
+                
+        ## strata C
+        if (!is.null(strata)){
+            agg <- split(db[c('time', 'potential_fup')], f = list(strata))
+            strata_C <- lapply(agg, function(x)
+                sum(x$time)/sum(x$potential_fup))
+            names(strata_C) <- paste0('group_', names(strata_C))
+            res <- cbind(res, strata_C)
+        }
+        res
+    })
+    
+    rval <- do.call(rbind, rval)
+    return(rval)
+    
 }
