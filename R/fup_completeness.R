@@ -55,7 +55,7 @@ fup_completeness <- function(time = NULL,
             agg <- split(db[c('time', 'potential_fup')], f = list(strata))
             strata_C <- lapply(agg, function(x)
                 sum(x$time)/sum(x$potential_fup))
-            names(strata_C) <- paste0('group_', names(strata_C))
+            ## names(strata_C) <- paste0('group_', names(strata_C))
             res <- cbind(res, strata_C)
         }
         res
