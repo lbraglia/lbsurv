@@ -303,9 +303,16 @@ km <- function(time = NULL,
                                        mark.time = mark_censored,
                                        ...),
                shades = {
+                   ## http://stackoverflow.com/questions/18584815/
                    mapply(FUN = function(ci, cols){
                        alpha <- conf_int_alpha/n_stratas
-                       col <- lbmisc::col2hex(cols, alpha = alpha)
+                       ## if it's a base color add alpha, otherwise if
+                       ## it is already a hexadecimal, leave it
+                       ## unchanged
+                       col <- if (cols %in% grDevices::colors()) 
+                                  lbmisc::col2hex(cols, alpha = alpha)
+                              else
+                                  cols
                        graphics::polygon(
                            c(ci$time,  rev(ci$time)),
                            c(ci$lower, rev(ci$upper)),

@@ -6,7 +6,7 @@ Authors@R: person('Luca', 'Braglia', email = 'lbraglia@mailbox.org',
 Description: Survival analysis utility functions.
 Depends: 
     R (>= 3.2.0)
-Imports: graphics, lbmisc, stats, survival, xtable
+Imports: grDevices, graphics, lbmisc, stats, survival, xtable
 URL: http://github.com/lbraglia/lbsurv
 BugReports: http://github.com/lbraglia/lbsurv/issues
 License: GPL-3

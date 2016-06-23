@@ -8,8 +8,8 @@ km(time = NULL, status = NULL, strata = NULL, time_unit = c("days",
   "weeks", "months", "years"), time_by = NULL, main = "", ylab = NULL,
   xlab = NULL, ylim = c(0L, 1L), xlim = NULL, reverse = FALSE,
   mark_censored = TRUE, conf_int = c("default", "none", "lines", "shades"),
-  test = c("logr", "hr", "both", "none"), plot_n_at_risk = TRUE,
-  legend_cmd = NULL, ...)
+  conf_int_alpha = 0.8, test = c("logr", "hr", "both", "none"),
+  plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -38,10 +38,15 @@ time_unit will be provided}
 
 \item{mark_censored}{mark censored observation}
 
-\item{conf_int}{character. Can be 'default', 'none' or 'lines'}
+\item{conf_int}{character. Can be 'default', 'none' or 'lines' or
+'shades'}
 
-\item{test}{tests: 'none' = don't plot tests, 'logr' = log-rank test,
-'hr' = hazard ratio, 'both' = log-rank test and hazard ratio}
+\item{conf_int_alpha}{a base level for alpha if \code{conf_int =
+'alpha'} (splitted by number of groups)}
+
+\item{test}{tests: 'none' = don't plot tests, 'logr' = log-rank
+test, 'hr' = hazard ratio, 'both' = log-rank test and hazard
+ratio}
 
 \item{plot_n_at_risk}{Logical value: plot number at risk?}
 
@@ -62,6 +67,6 @@ The function make the hypothesis that times are measured
 }
 \examples{
 library(survival)
-with(aml, km(time = time, status = status))
+km(time = aml$time, status = aml$status, strata = aml$x)
 }
 

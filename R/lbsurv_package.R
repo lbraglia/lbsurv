@@ -3,6 +3,7 @@
 #' @name lbsurv
 #' @docType package
 #' @useDynLib lbsurv
+#' @importFrom grDevices colors
 #' @importFrom graphics axTicks
 #' @importFrom graphics axis
 #' @importFrom graphics box
