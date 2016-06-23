@@ -39,9 +39,13 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #' @param ylim Y-axis limit. Default to c(0,1) be provided
 #' @param reverse plot cumulative events
 #' @param mark_censored mark censored observation
-#' @param conf_int character. Can be 'default', 'none' or 'lines'
-#' @param test tests: 'none' = don't plot tests, 'logr' = log-rank test,
-#'     'hr' = hazard ratio, 'both' = log-rank test and hazard ratio
+#' @param conf_int character. Can be 'default', 'none' or 'lines' or
+#'     'shades'
+#' @param conf_int_alpha a base level for alpha if \code{conf_int =
+#'     'alpha'} (splitted by number of groups)
+#' @param test tests: 'none' = don't plot tests, 'logr' = log-rank
+#'     test, 'hr' = hazard ratio, 'both' = log-rank test and hazard
+#'     ratio
 #' @param plot_n_at_risk Logical value: plot number at risk?
 #' @param legend_cmd Graph command to add legend, as string
 #' @param ... Further \code{\link{lines.survfit}} parameters
@@ -77,6 +81,7 @@ km <- function(time = NULL,
                mark_censored = TRUE,
                ## Plot Confidence interval
                conf_int = c('default', 'none', 'lines', 'shades'),
+               conf_int_alpha = 0.8,
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
                test = c('logr', 'hr', 'both', 'none'),
@@ -286,7 +291,6 @@ km <- function(time = NULL,
                lines = graphics::lines(fit,
                                        fun = lines_fun,
                                        conf.int = TRUE,
-
                                        ...))
     } else {
         switch(conf_int,
@@ -299,18 +303,21 @@ km <- function(time = NULL,
                                        mark.time = mark_censored,
                                        ...),
                shades = {
-                   ## lines(fit, conf.int = TRUE,  ...)
-                   lapply(CI_spl, function(x)
-                       graphics::polygon(c(x$time,  rev(x$time)),
-                                         c(x$lower, rev(x$upper)),
-                                         col = "grey90",
-                                         border = FALSE))
+                   mapply(FUN = function(ci, cols){
+                       alpha <- conf_int_alpha/n_stratas
+                       col <- lbmisc::col2hex(cols, alpha = alpha)
+                       graphics::polygon(
+                           c(ci$time,  rev(ci$time)),
+                           c(ci$lower, rev(ci$upper)),
+                           col = col,
+                           border = FALSE)},
+                       CI_spl,
+                       strata_col)
                    graphics::lines(fit,
                                    conf.int = FALSE,
-                                   mark.time = mark_censored
-                                   )
-               }
-               )
+                                   mark.time = mark_censored,
+                                   ...)
+               })
     }
     
     ## Add legend
