@@ -51,7 +51,7 @@ km_legend <- function(title, levels, colors, lty, lwd){
 #'     in days; in not leave time_unit not specified
 #' @examples
 #' library(survival)
-#' with(aml, km(time = time, status = status))
+#' km(time = aml$time, status = aml$status, strata = aml$x)
 #' @export
 km <- function(time = NULL,
                status = NULL,
