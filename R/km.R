@@ -2,22 +2,38 @@
 #'
 #' Make a legend command suitable for km
 #'
-#' @param title legend title
+#' @param x same as \code{legend}'s x
+#' @param y same as \code{legend}'s y
 #' @param levels factor levels
 #' @param colors colors
 #' @param lty lty
 #' @param lwd lwd
+#' @param title legend title
 #' @export
-km_legend <- function(title, levels, colors, lty, lwd){
-    titl <- deparse(title)
+km_legend <- function(x, y = NULL,
+                      levels = NULL,
+                      colors = NULL,
+                      lty = 'solid',
+                      lwd = 1,
+                      title = NULL){
+    x <- deparse(x)
+    y <- deparse(y)
     lev <- deparse(levels)
     cols <- deparse(colors)
     lt <- deparse(lty)
     lw <- deparse(lwd)
-    sprintf(paste0("legend(x = 72, y = 0.9, title = %s,",
-                   " bg = \"white\", ",
-                   "       legend = %s, col = %s, lty = %s, lwd = %s)"),
-            titl, lev, cols, lt, lw)
+    titl <- deparse(title)
+
+    paste0("legend(",
+           "x = ", x, ", ",
+           "y = ", y, ", ",
+           "title = ", titl, ", ",
+           "bg = \"white\", ",
+           "legend = ", lev, ", ",
+           "col = ", cols, ", ",
+           "lty = ", lt, ", ",
+           "lwd = ", lw, ")")
+
 }
 
 #' Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.

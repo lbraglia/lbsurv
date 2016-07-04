@@ -4,10 +4,13 @@
 \alias{km_legend}
 \title{Make a legend command suitable for km}
 \usage{
-km_legend(title, levels, colors, lty, lwd)
+km_legend(x, y = NULL, levels = NULL, colors = NULL, lty = "solid",
+  lwd = 1, title = NULL)
 }
 \arguments{
-\item{title}{legend title}
+\item{x}{same as \code{legend}'s x}
+
+\item{y}{same as \code{legend}'s y}
 
 \item{levels}{factor levels}
 
@@ -16,6 +19,8 @@ km_legend(title, levels, colors, lty, lwd)
 \item{lty}{lty}
 
 \item{lwd}{lwd}
+
+\item{title}{legend title}
 }
 \description{
 Make a legend command suitable for km
