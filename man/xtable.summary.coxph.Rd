@@ -5,9 +5,9 @@
 \title{xtable method for summary.coxph}
 \usage{
 \method{xtable}{summary.coxph}(x, digits = getOption("digits"),
-  print.coef = TRUE, print.se.coef = FALSE, print.z = FALSE,
-  print.p = TRUE, print.exp.coef = TRUE, print.exp.coef.lci = TRUE,
-  print.exp.coef.uci = TRUE, ...)
+  print.coef = FALSE, print.se.coef = FALSE, print.z = FALSE,
+  print.exp.coef = TRUE, print.exp.coef.lci = TRUE,
+  print.exp.coef.uci = TRUE, print.p = TRUE, ...)
 }
 \arguments{
 \item{x}{a \code{summary.coxph} object}
@@ -20,13 +20,13 @@
 
 \item{print.z}{print z?}
 
+\item{print.exp.coef}{print HR}
+
+\item{print.exp.coef.lci}{print HR lower confint}
+
+\item{print.exp.coef.uci}{print HR upper confint}
+
 \item{print.p}{print p?}
-
-\item{print.exp.coef}{print exp(beta)}
-
-\item{print.exp.coef.lci}{print confint(beta) low}
-
-\item{print.exp.coef.uci}{print confint(beta) low}
 
 \item{...}{other things passed to \code{xtable::xtable}}
 }
