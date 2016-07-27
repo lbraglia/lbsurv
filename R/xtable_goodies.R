@@ -14,7 +14,7 @@
 #' 
 #' @export
 xtable.summary.coxph <- function(x,
-                                 digits = getOption("digits"),
+                                 digits = 3,
                                  print.coef = FALSE,
                                  print.se.coef = FALSE,
                                  print.z = FALSE,
@@ -51,5 +51,14 @@ xtable.summary.coxph <- function(x,
     final_result <- results[ , column_select]
     names(final_result)[names(final_result) %in% 'exp(coef)'] <- 'HR'
 
-    xtable::xtable(final_result, digits = digits, ...)
+    final_result$`Pr(>|z|)` <- lbmisc::pretty_pval(
+        final_result$`Pr(>|z|)`,
+        equal = FALSE
+    )
+    
+    xt <- xtable::xtable(final_result,
+                         digits = digits,
+                         ...)
+    xtable::align(xt) <- rep('r', ncol(final_result) + 1)
+    xt
 }
