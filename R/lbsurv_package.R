@@ -20,8 +20,9 @@
 #' @importFrom stats pchisq
 #' @importFrom survival Surv
 #' @importFrom survival coxph
+#' @importFrom survival statefig
 #' @importFrom survival survdiff
 #' @importFrom survival survfit
-#' @importFrom xtable xtable
 #' @importFrom xtable align
+#' @importFrom xtable xtable
 NULL
