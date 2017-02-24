@@ -24,4 +24,3 @@ illness death multi-state model plot
 \examples{
 ill_death(recover = TRUE, box = TRUE)
 }
-

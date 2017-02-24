@@ -44,6 +44,7 @@ km_legend <- function(x, y = NULL,
 #' @param time survival time variable
 #' @param status survival indicator variable
 #' @param strata Stratifying variable (optional)
+#' @param plot plot (default = TRUE) or only return estimates?
 #' @param time_unit Time unit of x axis
 #' @param time_by Time step x axis (in days)
 #' @param main Graph main title
@@ -77,6 +78,8 @@ km <- function(time = NULL,
                status = NULL,
                ## NULL = non stratified, otherwise stratifying variable
                strata = NULL,
+               ## plot anything,
+               plot = TRUE,
                ## Time unit x axis
                time_unit = c('days', 'weeks', 'months', 'years'),
                ## Time step x axis (in days)
@@ -122,11 +125,7 @@ km <- function(time = NULL,
     ##   non vengano tagliate negli at risk 
     ## - inserire il parametro data come specificabile,
     ##   per prendere da un data.frame??
-
-    ## reset default graphical parameters on exit
-    old_par <- graphics::par(no.readonly = TRUE)
-    on.exit(graphics::par(old_par))
-    
+   
     ## time, status: check existence
     if (is.null(status)) stop("'status' needed.")
     if (is.null(time)) stop("'time' needed.")
@@ -259,159 +258,166 @@ km <- function(time = NULL,
     ## Plot section
     ## ------------
 
-    ## Color set-up: if given, otherwise set it black
-    strata_col <- if ('col' %in% names(dots)) dots$col
-                  else rep('black', n_stratas)
+    if (plot){
 
-    ## Se si desidera inserire la tabella dei number at risk
-    ## occorre impostare il margine inferiore, prevedendo un tot
-    ## di righe opportune (determinate dal numero degli strati) 
-    if (plot_n_at_risk) graphics::par('oma' = c(n_stratas + 1, 0, 0, 0))
-
-    ## xlim definition
-    if (is.null(xlim)) {
-        xlim_inf <-  -(max(fit$time)/15)
-        xlim_sup <- max(fit$time) + (- xlim_inf/3)
-    } else {
-        xlim_inf <- xlim[1]
-        xlim_sup <- xlim[2]
-    }
-        
-    ## Axis'n grid: 
-    ## y defaults are ok 
-    ## x has to be based on time_by, if specified
-    ## if not specified make 4 step
-    times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
-             else seq(0, max(fit$time), by = time_by * time_divisor)
+        ## reset default graphical parameters on exit
+        old_par <- graphics::par(no.readonly = TRUE)
+        on.exit(graphics::par(old_par))
     
-    ## Main plotting section
-    graphics::plot(NA, NA,
-                   xlim = c(xlim_inf, xlim_sup),
-                   ylim = ylim,
-                   axes = FALSE,
-                   ylab = ylab,
-                   xlab = xlab,
-                   main = main)
-    graphics::axis(2)
-    graphics::axis(1, at = times, labels = times/time_divisor)
-    lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
-    graphics::box()
-    ## main line and confidence intervals
-    if (reverse) {
-        lines_fun <- 'event'
-        switch(conf_int,
-               none  = graphics::lines(fit,
-                                       fun = lines_fun,
-                                       conf.int = FALSE,
-                                       ...),
-               lines = graphics::lines(fit,
-                                       fun = lines_fun,
-                                       conf.int = TRUE,
-                                       ...))
-    } else {
-        switch(conf_int,
-               none  = graphics::lines(fit,
-                                       conf.int = FALSE,
-                                       mark.time = mark_censored,
-                                       ...),
-               lines = graphics::lines(fit,
-                                       conf.int = TRUE,
-                                       mark.time = mark_censored,
-                                       ...),
-               shades = {
-                   ## http://stackoverflow.com/questions/18584815/
-                   mapply(FUN = function(ci, cols){
-                       alpha <- conf_int_alpha/n_stratas
-                       ## if it's a base color add alpha, otherwise if
-                       ## it is already a hexadecimal, leave it
-                       ## unchanged
-                       col <- if (cols %in% grDevices::colors()) 
-                                  lbmisc::col2hex(cols, alpha = alpha)
-                              else
-                                  cols
-                       graphics::polygon(
-                           c(ci$time,  rev(ci$time)),
-                           c(ci$lower, rev(ci$upper)),
-                           col = col,
-                           border = FALSE)},
-                       CI_spl,
-                       strata_col)
-                   graphics::lines(fit,
-                                   conf.int = FALSE,
-                                   mark.time = mark_censored,
-                                   ...)
-               })
-    }
-    
-    ## Add legend
-    if (!is.null(legend_cmd)) {
-        eval(parse(text = legend_cmd))
-    }
+        ## Color set-up: if given, otherwise set it black
+        strata_col <- if ('col' %in% names(dots)) dots$col
+                      else rep('black', n_stratas)
 
-    ## Add stat string to title
-    if (!univariate && (test %in% c('logr','hr','both') )) {
-        graphics::mtext(test_string, line = 0.2, family = 'sans', font = 3)
-    }
+        ## Se si desidera inserire la tabella dei number at risk
+        ## occorre impostare il margine inferiore, prevedendo un tot
+        ## di righe opportune (determinate dal numero degli strati) 
+        if (plot_n_at_risk) graphics::par('oma' = c(n_stratas + 1, 0, 0, 0))
 
-    ## Add number at risk
-    if (plot_n_at_risk) {
-
-        ## Print header
-        graphics::mtext('At risk', side = 1, line = 4, adj = 1,
-                        at = xlim_inf, font = 2)
-
-        ## Utilizzo axis per plottare gli a rischio negli strati
-        ## (la linea utilizzabile in presenza di titolo di asse
-        ## delle x e' dalla 4 in poi: la 4 e' per il titolo, dalla 5
-        ## in poi per i dati
-        
-        my_time <- summary(fit, times = times, extend = TRUE)$time
-        n_risk <- summary(fit, times = times, extend = TRUE)$n.risk
-        if (univariate) {
-            strata <- rep(strata_labels, length(my_time))
+        ## xlim definition
+        if (is.null(xlim)) {
+            xlim_inf <-  -(max(fit$time)/15)
+            xlim_sup <- max(fit$time) + (- xlim_inf/3)
         } else {
-            strata <- summary(fit, times = times, extend = TRUE)$strata
+            xlim_inf <- xlim[1]
+            xlim_sup <- xlim[2]
         }
         
-        risk_data <- data.frame(strata = strata,
-                                time = my_time,
-                                n_risk = n_risk)
-        if (!univariate) {
-            levels(risk_data$strata) <- sub('(^strata=)(.*$)',
-                                            '\\2', 
-                                            levels(risk_data$strata))
+        ## Axis'n grid: 
+        ## y defaults are ok 
+        ## x has to be based on time_by, if specified
+        ## if not specified make 4 step
+        times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
+                 else seq(0, max(fit$time), by = time_by * time_divisor)
+        
+        ## Main plotting section
+        graphics::plot(NA, NA,
+                       xlim = c(xlim_inf, xlim_sup),
+                       ylim = ylim,
+                       axes = FALSE,
+                       ylab = ylab,
+                       xlab = xlab,
+                       main = main)
+        graphics::axis(2)
+        graphics::axis(1, at = times, labels = times/time_divisor)
+        lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
+        graphics::box()
+        ## main line and confidence intervals
+        if (reverse) {
+            lines_fun <- 'event'
+            switch(conf_int,
+                   none  = graphics::lines(fit,
+                                           fun = lines_fun,
+                                           conf.int = FALSE,
+                                           ...),
+                   lines = graphics::lines(fit,
+                                           fun = lines_fun,
+                                           conf.int = TRUE,
+                                           ...))
+        } else {
+            switch(conf_int,
+                   none  = graphics::lines(fit,
+                                           conf.int = FALSE,
+                                           mark.time = mark_censored,
+                                           ...),
+                   lines = graphics::lines(fit,
+                                           conf.int = TRUE,
+                                           mark.time = mark_censored,
+                                           ...),
+                   shades = {
+                       ## http://stackoverflow.com/questions/18584815/
+                       mapply(FUN = function(ci, cols){
+                           alpha <- conf_int_alpha/n_stratas
+                           ## if it's a base color add alpha, otherwise if
+                           ## it is already a hexadecimal, leave it
+                           ## unchanged
+                           col <- if (cols %in% grDevices::colors()) 
+                                      lbmisc::col2hex(cols, alpha = alpha)
+                                  else
+                                      cols
+                           graphics::polygon(
+                                         c(ci$time,  rev(ci$time)),
+                                         c(ci$lower, rev(ci$upper)),
+                                         col = col,
+                                         border = FALSE)},
+                           CI_spl,
+                           strata_col)
+                       graphics::lines(fit,
+                                       conf.int = FALSE,
+                                       mark.time = mark_censored,
+                                       ...)
+                   })
         }
         
-        ## Lo split pone i dati nell'ordine della lista
-        ## nell'ordine dei dati, quindi per coerenza con l'ordine
-        ## dei colori e' necessario riordinare la lista
-        
-        spl_risk_data <- split( risk_data, risk_data$strata)
-        spl_risk_data <- spl_risk_data[ strata_labels ]
+        ## Add legend
+        if (!is.null(legend_cmd)) {
+            eval(parse(text = legend_cmd))
+        }
 
-        for(label in names(spl_risk_data) ) {
-            prog <- which( names(spl_risk_data) %in% label ) 
-            group_line_lab <- 4 + prog
-            group_line_num <- group_line_lab - 1
-            group_col <- strata_col[prog]
-            ## plot label del gruppo
-            graphics::mtext(label,
-                            side = 1,
-                            line = group_line_lab,
-                            at = xlim_inf,
-                            adj = 1,
-                            col = group_col)
-            ## plot dati per ogni time_by
-            graphics::axis(1,
-                           at = times,
-                           labels = spl_risk_data[[label]]$n_risk,
-                           line = group_line_num,
-                           tick = FALSE,
-                           col.axis = group_col)
+        ## Add stat string to title
+        if (!univariate && (test %in% c('logr','hr','both') )) {
+            graphics::mtext(test_string, line = 0.2, family = 'sans', font = 3)
+        }
+
+        ## Add number at risk
+        if (plot_n_at_risk) {
+
+            ## Print header
+            graphics::mtext('At risk', side = 1, line = 4, adj = 1,
+                            at = xlim_inf, font = 2)
+
+            ## Utilizzo axis per plottare gli a rischio negli strati
+            ## (la linea utilizzabile in presenza di titolo di asse
+            ## delle x e' dalla 4 in poi: la 4 e' per il titolo, dalla 5
+            ## in poi per i dati
+            
+            my_time <- summary(fit, times = times, extend = TRUE)$time
+            n_risk <- summary(fit, times = times, extend = TRUE)$n.risk
+            if (univariate) {
+                strata <- rep(strata_labels, length(my_time))
+            } else {
+                strata <- summary(fit, times = times, extend = TRUE)$strata
+            }
+            
+            risk_data <- data.frame(strata = strata,
+                                    time = my_time,
+                                    n_risk = n_risk)
+            if (!univariate) {
+                levels(risk_data$strata) <- sub('(^strata=)(.*$)',
+                                                '\\2', 
+                                                levels(risk_data$strata))
+            }
+            
+            ## Lo split pone i dati nell'ordine della lista
+            ## nell'ordine dei dati, quindi per coerenza con l'ordine
+            ## dei colori e' necessario riordinare la lista
+            
+            spl_risk_data <- split( risk_data, risk_data$strata)
+            spl_risk_data <- spl_risk_data[ strata_labels ]
+
+            for(label in names(spl_risk_data) ) {
+                prog <- which( names(spl_risk_data) %in% label ) 
+                group_line_lab <- 4 + prog
+                group_line_num <- group_line_lab - 1
+                group_col <- strata_col[prog]
+                ## plot label del gruppo
+                graphics::mtext(label,
+                                side = 1,
+                                line = group_line_lab,
+                                at = xlim_inf,
+                                adj = 1,
+                                col = group_col)
+                ## plot dati per ogni time_by
+                graphics::axis(1,
+                               at = times,
+                               labels = spl_risk_data[[label]]$n_risk,
+                               line = group_line_num,
+                               tick = FALSE,
+                               col.axis = group_col)
+            }
+
         }
 
     }
-
     ## Return Stats wheter or not plot has been done
     if (univariate) {
         invisible(list('km' = fit))

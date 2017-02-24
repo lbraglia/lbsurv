@@ -25,4 +25,3 @@ km_legend(x, y = NULL, levels = NULL, colors = NULL, lty = "solid",
 \description{
 Make a legend command suitable for km
 }
-

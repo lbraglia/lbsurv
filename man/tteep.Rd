@@ -61,4 +61,3 @@ with(db2, tteep(start_date, prog_date, death_date, last_fup))
 Guidance for Industry, Clinical Trial Endpoints for the approval of
 cancer drugs and biologics, FDA, May 2007
 }
-

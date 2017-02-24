@@ -31,4 +31,3 @@ with(db, status_at(start_date, prog_date, death_date, status_time = 10))
 with(db, status_at(start_date, prog_date, death_date, status_time = 100))
 with(db, status_at(start_date, prog_date, death_date, status_time = 200))
 }
-

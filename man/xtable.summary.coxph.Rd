@@ -33,4 +33,3 @@
 \description{
 xtable method for summary.coxph
 }
-

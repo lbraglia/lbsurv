@@ -54,4 +54,3 @@ status <- c(  1,  0,  0)
 cbind(data.frame(time, status), # original
       censor_at(time = time, status = status, censoring_time = ctimes))
 }
-

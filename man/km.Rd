@@ -4,12 +4,12 @@
 \alias{km}
 \title{Plots an 'enhanced' Kaplan-Meier plot, with base graphics package.}
 \usage{
-km(time = NULL, status = NULL, strata = NULL, time_unit = c("days",
-  "weeks", "months", "years"), time_by = NULL, main = "", ylab = NULL,
-  xlab = NULL, ylim = c(0L, 1L), xlim = NULL, reverse = FALSE,
-  mark_censored = TRUE, conf_int = c("default", "none", "lines", "shades"),
-  conf_int_alpha = 0.8, test = c("logr", "hr", "both", "none"),
-  plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
+km(time = NULL, status = NULL, strata = NULL, plot = TRUE,
+  time_unit = c("days", "weeks", "months", "years"), time_by = NULL,
+  main = "", ylab = NULL, xlab = NULL, ylim = c(0L, 1L), xlim = NULL,
+  reverse = FALSE, mark_censored = TRUE, conf_int = c("default", "none",
+  "lines", "shades"), conf_int_alpha = 0.8, test = c("logr", "hr", "both",
+  "none"), plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -17,6 +17,8 @@ km(time = NULL, status = NULL, strata = NULL, time_unit = c("days",
 \item{status}{survival indicator variable}
 
 \item{strata}{Stratifying variable (optional)}
+
+\item{plot}{plot (default = TRUE) or only return estimates?}
 
 \item{time_unit}{Time unit of x axis}
 
@@ -69,4 +71,3 @@ The function make the hypothesis that times are measured
 library(survival)
 km(time = aml$time, status = aml$status, strata = aml$x)
 }
-
