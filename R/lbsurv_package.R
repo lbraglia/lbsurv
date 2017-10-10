@@ -20,6 +20,7 @@
 #' @importFrom stats pchisq
 #' @importFrom survival Surv
 #' @importFrom survival coxph
+#' @importFrom survival cox.zph
 #' @importFrom survival statefig
 #' @importFrom survival survdiff
 #' @importFrom survival survfit
