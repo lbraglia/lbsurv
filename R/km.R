@@ -63,6 +63,7 @@ km_legend <- function(x, y = NULL,
 #' @param test tests: 'none' = don't plot tests, 'logr' = log-rank
 #'     test, 'hr' = hazard ratio, 'both' = log-rank test and hazard
 #'     ratio
+#' @param cex_test cex parameter for test string
 #' @param plot_n_at_risk Logical value: plot number at risk?
 #' @param legend_cmd Graph command to add legend, as string
 #' @param ... Further \code{\link{lines.survfit}} parameters
@@ -104,6 +105,7 @@ km <- function(time = NULL,
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
                test = c('logr', 'hr', 'both', 'none'),
+               cex_test = 1,
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
                ## Graph command to add legend, as string
@@ -114,8 +116,6 @@ km <- function(time = NULL,
 
     ## TODO
     ## - permettere al plot di incastrarsi in un mfrow specificato a monte
-    ##   Attualmente possibile solo se plot_n_at_risk = FALSE (perche' in tal
-    ##   caso non si usa oma)
     ## - inserire la possibilita' di visualizzare la mediana 
     ##   di sopravvivenza
     ## - se il plot non ha titolo e non ha test ottimizzare lo spazio
@@ -198,7 +198,7 @@ km <- function(time = NULL,
         mod_formula <- survival::Surv(time, status) ~ 1
         univariate <- TRUE
         n_stratas <- 1
-        strata_labels <- 'All'
+        strata_labels <- 'All '
         if ('default' %in% conf_int) conf_int <- 'lines'
     } else {
         db <- data.frame(time = time, status = status, strata = strata)
@@ -297,7 +297,7 @@ km <- function(time = NULL,
                        ylab = ylab,
                        xlab = xlab,
                        main = main)
-        graphics::axis(2)
+        graphics::axis(2, las = 1)
         graphics::axis(1, at = times, labels = times/time_divisor)
         lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
         graphics::box()
@@ -355,7 +355,9 @@ km <- function(time = NULL,
 
         ## Add stat string to title
         if (!univariate && (test %in% c('logr','hr','both') )) {
-            graphics::mtext(test_string, line = 0.2, family = 'sans', font = 3)
+            graphics::mtext(test_string, line = 0.2,
+                            cex = cex_test,
+                            family = 'sans', font = 3)
         }
 
         ## Add number at risk

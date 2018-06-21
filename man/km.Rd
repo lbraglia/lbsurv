@@ -9,7 +9,7 @@ km(time = NULL, status = NULL, strata = NULL, plot = TRUE,
   main = "", ylab = NULL, xlab = NULL, ylim = c(0L, 1L), xlim = NULL,
   reverse = FALSE, mark_censored = TRUE, conf_int = c("default", "none",
   "lines", "shades"), conf_int_alpha = 0.8, test = c("logr", "hr", "both",
-  "none"), plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
+  "none"), cex_test = 1, plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -49,6 +49,8 @@ time_unit will be provided}
 \item{test}{tests: 'none' = don't plot tests, 'logr' = log-rank
 test, 'hr' = hazard ratio, 'both' = log-rank test and hazard
 ratio}
+
+\item{cex_test}{cex parameter for test string}
 
 \item{plot_n_at_risk}{Logical value: plot number at risk?}
 
