@@ -9,7 +9,8 @@ km(time = NULL, status = NULL, strata = NULL, plot = TRUE,
   main = "", ylab = NULL, xlab = NULL, ylim = c(0L, 1L), xlim = NULL,
   reverse = FALSE, mark_censored = TRUE, conf_int = c("default", "none",
   "lines", "shades"), conf_int_alpha = 0.8, test = c("logr", "hr", "both",
-  "none"), cex_test = 1, plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
+  "none"), cex_test = par("cex") * 0.8, plot_n_at_risk = TRUE,
+  legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}

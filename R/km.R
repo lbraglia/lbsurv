@@ -105,7 +105,7 @@ km <- function(time = NULL,
                ## Test: none = don't plot tests, logr = logranktest,
                ##       hr = hazratio, both = both
                test = c('logr', 'hr', 'both', 'none'),
-               cex_test = 1,
+               cex_test = par("cex") * 0.8,
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
                ## Graph command to add legend, as string
@@ -365,6 +365,7 @@ km <- function(time = NULL,
 
             ## Print header
             graphics::mtext('At risk', side = 1, line = 4, adj = 1,
+                            cex = old_par$cex,
                             at = xlim_inf, font = 2)
 
             ## Utilizzo axis per plottare gli a rischio negli strati
@@ -404,6 +405,7 @@ km <- function(time = NULL,
                 ## plot label del gruppo
                 graphics::mtext(label,
                                 side = 1,
+                                cex = old_par$cex,
                                 line = group_line_lab,
                                 at = xlim_inf,
                                 adj = 1,
