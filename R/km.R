@@ -56,6 +56,7 @@ km_legend <- function(x, y = NULL,
 #' @param ylim Y-axis limit. Default to c(0,1) be provided
 #' @param reverse plot cumulative events
 #' @param mark_censored mark censored observation
+#' @param pch_censored pch used for censored observation
 #' @param conf_int character. Can be 'default', 'none' or 'lines' or
 #'     'shades'
 #' @param conf_int_alpha a base level for alpha if \code{conf_int =
@@ -99,6 +100,8 @@ km <- function(time = NULL,
                reverse = FALSE,
                ## mark censored observation
                mark_censored = TRUE,
+               ## pch used for censored observation
+               pch_censored = "'",
                ## Plot Confidence interval
                conf_int = c('default', 'none', 'lines', 'shades'),
                conf_int_alpha = 0.8,
@@ -271,7 +274,7 @@ km <- function(time = NULL,
         ## Se si desidera inserire la tabella dei number at risk
         ## occorre impostare il margine inferiore, prevedendo un tot
         ## di righe opportune (determinate dal numero degli strati) 
-        if (plot_n_at_risk) graphics::par('oma' = c(n_stratas + 1, 0, 0, 0))
+        if (plot_n_at_risk) graphics::par('oma' = c(n_stratas + 0.1, 0, 0, 0))
 
         ## xlim definition
         if (is.null(xlim)) {
@@ -318,10 +321,12 @@ km <- function(time = NULL,
                    none  = graphics::lines(fit,
                                            conf.int = FALSE,
                                            mark.time = mark_censored,
+                                           pch = pch_censored,
                                            ...),
                    lines = graphics::lines(fit,
                                            conf.int = TRUE,
                                            mark.time = mark_censored,
+                                           pch = pch_censored,
                                            ...),
                    shades = {
                        ## http://stackoverflow.com/questions/18584815/
@@ -343,6 +348,7 @@ km <- function(time = NULL,
                            strata_col)
                        graphics::lines(fit,
                                        conf.int = FALSE,
+                                       pch = pch_censored,
                                        mark.time = mark_censored,
                                        ...)
                    })

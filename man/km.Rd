@@ -7,10 +7,10 @@
 km(time = NULL, status = NULL, strata = NULL, plot = TRUE,
   time_unit = c("days", "weeks", "months", "years"), time_by = NULL,
   main = "", ylab = NULL, xlab = NULL, ylim = c(0L, 1L), xlim = NULL,
-  reverse = FALSE, mark_censored = TRUE, conf_int = c("default", "none",
-  "lines", "shades"), conf_int_alpha = 0.8, test = c("logr", "hr", "both",
-  "none"), cex_test = par("cex") * 0.8, plot_n_at_risk = TRUE,
-  legend_cmd = NULL, ...)
+  reverse = FALSE, mark_censored = TRUE, pch_censored = "'",
+  conf_int = c("default", "none", "lines", "shades"), conf_int_alpha = 0.8,
+  test = c("logr", "hr", "both", "none"), cex_test = par("cex") * 0.8,
+  plot_n_at_risk = TRUE, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -40,6 +40,8 @@ time_unit will be provided}
 \item{reverse}{plot cumulative events}
 
 \item{mark_censored}{mark censored observation}
+
+\item{pch_censored}{pch used for censored observation}
 
 \item{conf_int}{character. Can be 'default', 'none' or 'lines' or
 'shades'}
