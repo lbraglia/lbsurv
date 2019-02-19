@@ -6,8 +6,8 @@
 \usage{
 \method{xtable}{summary.coxph}(x, digits = 3, print.coef = FALSE,
   print.se.coef = FALSE, print.z = FALSE, print.exp.coef = TRUE,
-  print.exp.coef.lci = TRUE, print.exp.coef.uci = TRUE, print.p = TRUE,
-  ...)
+  print.exp.coef.lci = TRUE, print.exp.coef.uci = TRUE,
+  print.p = TRUE, ...)
 }
 \arguments{
 \item{x}{a \code{summary.coxph} object}
