@@ -239,10 +239,12 @@ km <- function(time = NULL,
         ## Cox Model (and his summary)
         cox <- survival::coxph(mod_formula, data = db)
         scox <- summary(cox)
-        hr_string  <- sprintf('HR=%.3f (95%% CI, %.3f-%.3f)',
-                              stats::coefficients(scox)[2],
+        scox_coefs <- stats::coefficients(scox)
+        hr_string  <- sprintf('HR=%.2f (95%% CI, %.2f-%.2f, p%s)',
+                              scox_coefs[2],
                               scox$conf.int[3],
-                              scox$conf.int[4])
+                              scox$conf.int[4],
+                              lbmisc::pretty_pval(scox_coefs[5], equal = TRUE))
         both_string <- paste(logr_string, hr_string, sep = ' - ')
 	
         ## Choose which stat to print in the graph
