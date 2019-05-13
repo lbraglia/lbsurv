@@ -66,6 +66,7 @@ km_legend <- function(x, y = NULL,
 #'     ratio
 #' @param cex_test cex parameter for test string
 #' @param plot_n_at_risk Logical value: plot number at risk?
+#' @param cex_n_at_risk cex of number at risk
 #' @param legend_cmd Graph command to add legend, as string
 #' @param ... Further \code{\link{lines.survfit}} parameters
 #' @return The function plot the graph and return a list with
@@ -111,6 +112,7 @@ km <- function(time = NULL,
                cex_test = par("cex") * 0.8,
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
+               cex_n_at_risk = par("cex") * 0.8,
                ## Graph command to add legend, as string
                legend_cmd = NULL,
                ## Further lines.survfit params
@@ -373,7 +375,7 @@ km <- function(time = NULL,
 
             ## Print header
             graphics::mtext('At risk', side = 1, line = 4, adj = 1,
-                            cex = old_par$cex,
+                            cex = cex_n_at_risk,
                             at = xlim_inf, font = 2)
 
             ## Utilizzo axis per plottare gli a rischio negli strati
@@ -413,7 +415,7 @@ km <- function(time = NULL,
                 ## plot label del gruppo
                 graphics::mtext(label,
                                 side = 1,
-                                cex = old_par$cex,
+                                cex = cex_n_at_risk,
                                 line = group_line_lab,
                                 at = xlim_inf,
                                 adj = 1,
@@ -421,6 +423,7 @@ km <- function(time = NULL,
                 ## plot dati per ogni time_by
                 graphics::axis(1,
                                at = times,
+                               cex.axis = cex_n_at_risk,
                                labels = spl_risk_data[[label]]$n_risk,
                                line = group_line_num,
                                tick = FALSE,

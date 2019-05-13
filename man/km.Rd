@@ -11,7 +11,7 @@ km(time = NULL, status = NULL, strata = NULL, plot = TRUE,
   pch_censored = "'", conf_int = c("default", "none", "lines",
   "shades"), conf_int_alpha = 0.8, test = c("logr", "hr", "both",
   "none"), cex_test = par("cex") * 0.8, plot_n_at_risk = TRUE,
-  legend_cmd = NULL, ...)
+  cex_n_at_risk = par("cex") * 0.8, legend_cmd = NULL, ...)
 }
 \arguments{
 \item{time}{survival time variable}
@@ -57,6 +57,8 @@ ratio}
 \item{cex_test}{cex parameter for test string}
 
 \item{plot_n_at_risk}{Logical value: plot number at risk?}
+
+\item{cex_n_at_risk}{cex of number at risk}
 
 \item{legend_cmd}{Graph command to add legend, as string}
 
