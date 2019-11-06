@@ -47,6 +47,7 @@ km_legend <- function(x, y = NULL,
 #' @param plot plot (default = TRUE) or only return estimates?
 #' @param time_unit Time unit of x axis
 #' @param time_by Time step x axis (in days)
+#' @param quantile_probs quantile calculated (default to 0.5, aka median)
 #' @param main Graph main title
 #' @param ylab Y-axis label.
 #' @param xlab X-axis label. If NULL a suitable default based on
@@ -87,6 +88,8 @@ km <- function(time = NULL,
                time_unit = c('days', 'weeks', 'months', 'years'),
                ## Time step x axis (in days)
                time_by = NULL,
+               ## quantiles calculated
+               quantile_probs = 0.5,
                ## Main title
                main = '',
                ## Y axis label
@@ -227,6 +230,13 @@ km <- function(time = NULL,
     ## Kaplan-Meyer survival estimate
     fit <- survival::survfit(mod_formula, data = db)
     sfit <- summary(fit)
+
+    ## Quantiles
+    quantiles <- quantile(fit, probs = quantile_probs)
+    quantiles <- do.call(cbind, quantiles)
+    quantiles <- quantiles / time_divisor
+    quantiles <- as.data.frame(quantiles)
+    names(quantiles) <- c("estimate", "lower", "upper")
     
     if( !univariate ) {
         ## Log-rank test
@@ -435,9 +445,10 @@ km <- function(time = NULL,
     }
     ## Return Stats wheter or not plot has been done
     if (univariate) {
-        invisible(list('km' = fit))
+        invisible(list('km' = fit, 'quantiles' = quantiles))
     } else {
         invisible(list('km' = fit,
+                       'quantiles' = quantiles,
                        'logrank' = logr,
                        'cox' = cox,
                        'scox' = scox))
