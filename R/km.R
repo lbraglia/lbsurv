@@ -66,6 +66,7 @@ km_legend <- function(x, y = NULL,
 #'     test, 'hr' = hazard ratio, 'both' = log-rank test and hazard
 #'     ratio
 #' @param cex_test cex parameter for test string
+#' @param plot_grid plot grid
 #' @param plot_n_at_risk Logical value: plot number at risk?
 #' @param cex_n_at_risk cex of number at risk
 #' @param legend_cmd Graph command to add legend, as string
@@ -113,13 +114,16 @@ km <- function(time = NULL,
                ##       hr = hazratio, both = both
                test = c('logr', 'hr', 'both', 'none'),
                cex_test = par("cex") * 0.8,
+               ## plot grid
+               plot_grid = TRUE,
                ## Plot number ad risk in the km
                plot_n_at_risk = TRUE,
                cex_n_at_risk = par("cex") * 0.8,
                ## Graph command to add legend, as string
                legend_cmd = NULL,
                ## Further lines.survfit params
-               ...)
+               ...
+               )
 {
 
     ## TODO
@@ -316,7 +320,8 @@ km <- function(time = NULL,
                        main = main)
         graphics::axis(2, las = 1)
         graphics::axis(1, at = times, labels = times/time_divisor)
-        lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
+        if (plot_grid)
+            lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
         graphics::box()
         ## main line and confidence intervals
         if (reverse) {
