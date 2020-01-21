@@ -11,6 +11,6 @@ URL: http://github.com/lbraglia/lbsurv
 BugReports: http://github.com/lbraglia/lbsurv/issues
 License: GPL-3
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: testthat
 Encoding: UTF-8

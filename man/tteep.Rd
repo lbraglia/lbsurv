@@ -4,8 +4,13 @@
 \alias{tteep}
 \title{Common time to event end-points calculator}
 \usage{
-tteep(start_date = NULL, prog_date = NULL, death_date = NULL,
-  last_fup = NULL, ep = c("os", "pfs", "ttp"))
+tteep(
+  start_date = NULL,
+  prog_date = NULL,
+  death_date = NULL,
+  last_fup = NULL,
+  ep = c("os", "pfs", "ttp")
+)
 }
 \arguments{
 \item{start_date}{Date: starting follow up date}
@@ -56,8 +61,9 @@ db2 <- data.frame(start_date = c(0,  0,  0,  0, NA,  0, NA),
                   death_date = c(6, NA,  6, NA, NA, NA, NA),
                   last_fup   = c(6, 12,  6, 12, 12, NA, NA))
 with(db2, tteep(start_date, prog_date, death_date, last_fup))
+
 }
 \references{
-Guidance for Industry, Clinical Trial Endpoints for the approval of
-cancer drugs and biologics, FDA, May 2007
+Guidance for Industry, Clinical Trial Endpoints for the
+    approval of cancer drugs and biologics, FDA, May 2007
 }

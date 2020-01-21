@@ -4,8 +4,12 @@
 \alias{status_at}
 \title{Return patients status at given time}
 \usage{
-status_at(start_date = NULL, prog_date = NULL, death_date = NULL,
-  status_time = NULL)
+status_at(
+  start_date = NULL,
+  prog_date = NULL,
+  death_date = NULL,
+  status_time = NULL
+)
 }
 \arguments{
 \item{start_date}{time variable}

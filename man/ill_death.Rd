@@ -4,8 +4,13 @@
 \alias{ill_death}
 \title{illness death multi-state model plot}
 \usage{
-ill_death(entry_lab = "Entry", illness_lab = "Relapse",
-  death_lab = "Death", recover = FALSE, box = FALSE)
+ill_death(
+  entry_lab = "Entry",
+  illness_lab = "Relapse",
+  death_lab = "Death",
+  recover = FALSE,
+  box = FALSE
+)
 }
 \arguments{
 \item{entry_lab}{char entry state label}

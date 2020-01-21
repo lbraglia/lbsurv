@@ -4,8 +4,12 @@
 \alias{fup_completeness}
 \title{Calculate C index of of follow up completeness}
 \usage{
-fup_completeness(time = NULL, status = NULL, cutoff = seq(1,
-  max(time), length = 10), strata = NULL)
+fup_completeness(
+  time = NULL,
+  status = NULL,
+  cutoff = seq(1, max(time), length = 10),
+  strata = NULL
+)
 }
 \arguments{
 \item{time}{Follow up (in days?)}

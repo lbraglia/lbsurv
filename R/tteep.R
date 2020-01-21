@@ -39,9 +39,9 @@
 #'                   death_date = c(6, NA,  6, NA, NA, NA, NA),
 #'                   last_fup   = c(6, 12,  6, 12, 12, NA, NA))
 #' with(db2, tteep(start_date, prog_date, death_date, last_fup))
-#' @references
-#' Guidance for Industry, Clinical Trial Endpoints for the approval of
-#' cancer drugs and biologics, FDA, May 2007
+#'
+#' @references Guidance for Industry, Clinical Trial Endpoints for the
+#'     approval of cancer drugs and biologics, FDA, May 2007
 #' @export
 tteep <- function(start_date = NULL,
                   prog_date  = NULL,
@@ -50,7 +50,6 @@ tteep <- function(start_date = NULL,
                   ep = c("os", "pfs", "ttp"))
 {
 
-    ## Input check
     if( is.null(start_date) || (! (inherits(start_date, 'Date') || (is.numeric(start_date)))))
         stop('start_date must be date or a numeric')
 
@@ -72,10 +71,10 @@ tteep <- function(start_date = NULL,
     
     ## argument preprocessing
     start_date <- as.numeric(start_date)
-    prog_date <- as.numeric(prog_date)
+    prog_date  <- as.numeric(prog_date)
     death_date <- as.numeric(death_date)
-    last_fup <- as.numeric(last_fup)
-    ep <- gsub(' ', '', tolower(ep))
+    last_fup   <- as.numeric(last_fup)
+    ep <- gsub(" ", "", tolower(ep))
 
     ## Return value
     rval <- list()
@@ -85,6 +84,8 @@ tteep <- function(start_date = NULL,
         rval$os_status <- os_status <- as.integer(death)
         os_last_date <- ifelse(os_status, death_date, last_fup)
         rval$os_time <- os_last_date - start_date
+        if (any(rval$os_time < 0, na.rm = TRUE))
+            warning("some OS times are < 0")
     } 
     ## Progression Free Survival
     if ("pfs" %in% ep) { 
@@ -96,6 +97,8 @@ tteep <- function(start_date = NULL,
         min_prog_death[!is.finite(min_prog_death)] <- NA
         pfs_last_date <- ifelse(pfs_status, min_prog_death, last_fup)
         rval$pfs_time <- pfs_last_date - start_date
+        if (any(rval$pfs_time < 0, na.rm = TRUE))
+            warning("some PFS times are < 0")
     } 
     ## Time to progression
     if ("ttp" %in% ep) {
@@ -106,8 +109,11 @@ tteep <- function(start_date = NULL,
         min_death_lfup[!is.finite(min_death_lfup)] <- NA
         ttp_last_date <- ifelse(ttp_status, prog_date, min_death_lfup)
         rval$ttp_time <- ttp_last_date - start_date
+        if (any(rval$ttp_time < 0, na.rm = TRUE))
+            warning("some TTP times are < 0")
     } 
 
-    as.data.frame(rval)[paste(rep(ep, each = 2), c("time", "status"), sep = "_")]
+    name_order <- paste(rep(ep, each = 2), c("time", "status"), sep = "_")
+    as.data.frame(rval)[name_order]
 
 }

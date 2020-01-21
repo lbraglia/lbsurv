@@ -3,7 +3,6 @@
 \docType{package}
 \name{lbsurv}
 \alias{lbsurv}
-\alias{lbsurv-package}
 \title{lbsurv.}
 \description{
 lbsurv.

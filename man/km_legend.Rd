@@ -4,8 +4,15 @@
 \alias{km_legend}
 \title{Make a legend command suitable for km}
 \usage{
-km_legend(x, y = NULL, levels = NULL, colors = NULL, lty = "solid",
-  lwd = 1, title = NULL)
+km_legend(
+  x,
+  y = NULL,
+  levels = NULL,
+  colors = NULL,
+  lty = "solid",
+  lwd = 1,
+  title = NULL
+)
 }
 \arguments{
 \item{x}{same as \code{legend}'s x}
