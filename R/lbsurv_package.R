@@ -14,6 +14,7 @@
 #' @importFrom graphics polygon
 #' @importFrom lbmisc NA_remove
 #' @importFrom lbmisc add_grid
+#' @importFrom lbmisc upcase
 #' @importFrom lbmisc pretty_pval
 #' @importFrom stats aggregate
 #' @importFrom stats coefficients
@@ -24,6 +25,7 @@
 #' @importFrom survival statefig
 #' @importFrom survival survdiff
 #' @importFrom survival survfit
+#' @importFrom cmprsk cuminc
 #' @importFrom xtable align
 #' @importFrom xtable xtable
 NULL

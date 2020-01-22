@@ -235,13 +235,36 @@ km <- function(time = NULL,
     fit <- survival::survfit(mod_formula, data = db)
     sfit <- summary(fit)
 
+    ## times for plot ticks, n at risk, summaries and so on
+    ## x has to be based on time_by, if specified
+    ## if not specified make 4 step
+    times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
+             else seq(0, max(fit$time), by = time_by * time_divisor)
+    
     ## Quantiles
     quantiles <- quantile(fit, probs = quantile_probs)
     quantiles <- do.call(cbind, quantiles)
     quantiles <- quantiles / time_divisor
     quantiles <- as.data.frame(quantiles)
     names(quantiles) <- c("estimate", "lower", "upper")
-    
+
+    ## Summary estimates for presentation purposes
+    est_times <- seq(from = 0L, to = max(times), by = time_divisor)
+    sfit2 <- summary(fit, times = est_times)
+    ret_sfit <- if (univariate) with(sfit2,
+                                     data.frame('time' = time / time_divisor,
+                                                'Estimate' =  surv,
+                                                'Lower'    = lower,
+                                                'Upper'    = upper))
+                else with(sfit2,
+                          data.frame('time' = time / time_divisor,
+                                     'group' = gsub('strata=', '', strata),
+                                     'Estimate' =  surv,
+                                     'Lower'    = lower,
+                                     'Upper'    = upper))
+    names(ret_sfit)[1] <- time_unit
+
+    ## Tests
     if( !univariate ) {
         ## Log-rank test
         logr <- survival::survdiff(mod_formula, data = db)
@@ -302,14 +325,7 @@ km <- function(time = NULL,
             xlim_inf <- xlim[1]
             xlim_sup <- xlim[2]
         }
-        
-        ## Axis'n grid: 
-        ## y defaults are ok 
-        ## x has to be based on time_by, if specified
-        ## if not specified make 4 step
-        times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
-                 else seq(0, max(fit$time), by = time_by * time_divisor)
-        
+                
         ## Main plotting section
         graphics::plot(NA, NA,
                        xlim = c(xlim_inf, xlim_sup),
@@ -450,10 +466,13 @@ km <- function(time = NULL,
     }
     ## Return Stats wheter or not plot has been done
     if (univariate) {
-        invisible(list('km' = fit, 'quantiles' = quantiles))
+        invisible(list('km' = fit,
+                       'quantiles' = quantiles,
+                       'estimates' = ret_sfit))
     } else {
         invisible(list('km' = fit,
                        'quantiles' = quantiles,
+                       'estimates' = ret_sfit,
                        'logrank' = logr,
                        'cox' = cox,
                        'scox' = scox))
