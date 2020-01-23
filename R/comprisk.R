@@ -5,14 +5,16 @@
 #' setting
 #' 
 #' @param time survival time variable
-#' @param status integer with 0 = censored or factor with
-#' first level = censored
+#' @param status integer with 0 = censored or factor with first level
+#'     = censored
 #' @param strata Stratifying variable (optional)
-#' @param plot plot (default = TRUE) or only return estimates?
 #' @param time_unit Time unit of x axis
 #' @param time_by Time step x axis (in days) @param quantile_probs
+#' @param plot plot (default = TRUE) or only return estimates?
 # quantile calculated (default to 0.5, aka median) @param main Graph
 # main title
+#' @param plot_ci plot confidence intervalse for estimates (for univariate unstacked and
+#'    multivariate plots)
 #' @param ylab Y-axis label.
 #' @param xlab X-axis label. If NULL a suitable default based on
 #'     time_unit will be provided
@@ -25,9 +27,11 @@
 # 'shades' @param conf_int_alpha a base level for alpha if
 # \code{conf_int = 'alpha'} (splitted by number of groups)
 #' @param test tests: 'none' = don't plot tests, 'gray' = gray test
+#' @param col_status color for exit status (mainly for univariate
+#'     plotting). Otherwise \code{col}, specified in \code{...}, set colors for groups (eg treatment)
 #' @param cex_test cex parameter for test string
+#' @param cex_legend cex parameter for legend string
 #' @param plot_grid plot grid @param plot_n_at_risk Logical value:
-# plot number at risk?  @param cex_n_at_risk cex of number at risk
 #' @param legend_cmd Graph command to add legend, as string
 #' @param ... Further \code{\link{lines.survfit}} parameters
 #' @examples
@@ -45,12 +49,14 @@
 comprisk <- function(time = NULL, status = NULL,
                      ## NULL = non stratified, otherwise stratifying variable
                      strata = NULL,
-                     ## plot anything,
-                     plot = TRUE,
                      ## Time unit x axis
                      time_unit = c('days', 'weeks', 'months', 'years'),
                      ## Time step x axis (in days)
                      time_by = NULL,
+                     ## plot anything,
+                     plot = TRUE,
+                     ## plot ci in univariate unstacked and multivariate plots
+                     plot_ci = FALSE,
                      ## ## quantiles calculated
                      ## quantile_probs = 0.5,
                      ## ## Main title
@@ -75,7 +81,10 @@ comprisk <- function(time = NULL, status = NULL,
                      ## Test: none = don't plot tests, logr = logranktest,
                      ##       hr = hazratio, both = both
                      test = c('none', 'gray'),
+                     ## color for status levels
+                     col_status = seq_len(nlevels(status) - 1),
                      cex_test = par("cex") * 0.8,
+                     cex_legend = par("cex") * 0.8,
                      ## plot grid
                      plot_grid = TRUE,
                      ## ## Plot number ad risk in the km
@@ -116,8 +125,7 @@ comprisk <- function(time = NULL, status = NULL,
     test <- match.arg(test)
     dots <- list(...)
 
-    ## ## Coerce status to a factor for uniformity
-    # browser()
+    ## Coerce status to a factor for uniformity
     status   <- factor(status)
     n_status <- nlevels(status)
     status_lab <- levels(status)
@@ -164,30 +172,54 @@ comprisk <- function(time = NULL, status = NULL,
     
     fit <- survival::survfit(formula = mod_formula, data = db)
     sfit <- summary(fit)
-
+    max_time <- max(fit$time)
+    
     ## times for plot ticks, n at risk, summaries and so on
     ## x has to be based on time_by, if specified
     ## if not specified make 4 step
-    times <- if (is.null(time_by)) seq(0, max(fit$time), length = 4)
-             else seq(0, max(fit$time), by = time_by * time_divisor)
+    times <- if (is.null(time_by)) seq(0, max_time, length = 4)
+             else seq(0, max_time, by = time_by * time_divisor)
 
     ## Summary estimates for presentation purposes
     est_times <- seq(from = 0L, to = max(times), by = time_divisor)
     sfit2 <- summary(fit, times = est_times)
-#    browser()
     prob_colnames <- sprintf("Pr(%s)", sfit2$states)
     prob_colnames[length(prob_colnames)] <- "Pr(Event Free)"
     probs <- setNames(data.frame(sfit2$pstate), prob_colnames)
-    ret_sfit <- if (univariate)
-                    cbind(data.frame('time' = sfit2$time / time_divisor),
-                          probs)
-                else 
-                    cbind(data.frame('time' = sfit2$time / time_divisor,
-                                     'group' = gsub('strata=', '', sfit2$strata)),
-                          probs)
-    names(ret_sfit)[1] <- time_unit
+    lower <- setNames(data.frame(sfit2$lower), prob_colnames)
+    upper <- setNames(data.frame(sfit2$upper), prob_colnames)
+    
+    ## returned tables
+    if (univariate) {
+        preamble <- data.frame('time' = sfit2$time / time_divisor)
+        r_estimates <- cbind(preamble, probs)
+        r_lower     <- cbind(preamble, lower)
+        r_upper     <- cbind(preamble, upper)                                 
+    } else {
+        preamble <- data.frame('time' = sfit2$time / time_divisor,
+                               'group' = gsub('strata=', '', sfit2$strata))
+        r_estimates <- cbind(preamble, probs)
+        r_lower     <- cbind(preamble, lower)
+        r_upper     <- cbind(preamble, upper)
+    }
 
+    ## all estimates (with lower and upper CI)
+    r_all <- {
+        indexes <- matrix(seq_len(3L * n_status), ncol = n_status, byrow = TRUE)
+        dim(indexes) <- NULL
+        all_estimates <- cbind(probs,
+                               setNames(lower, rep('low CI', ncol(lower))),
+                               setNames(upper, rep('up CI' , ncol(upper)))) [, indexes]
+        cbind(preamble, all_estimates)
+    }
+
+    names(r_estimates)[1] <- names(r_lower)[1] <-
+        names(r_upper)[1] <- names(r_all)[1]   <- time_unit
+
+    ## -----
     ## Tests
+    ## -----
+    
     if( !univariate ) {
         ## Gray test
         gray <- data.frame(with(db, cmprsk::cuminc(ftime = time,
@@ -221,12 +253,76 @@ comprisk <- function(time = NULL, status = NULL,
 
         ## test_string <- gray_string
     }
-    
+
+    ## ------------
+    ## plotting
+    ## ------------
+    if (plot) {
+
+        ## Color set-up
+        ## Strata (eg treatment) cols: if not given, set it black;
+        ## then check for length
+        strata_col <- if ('col' %in% names(dots)) dots$col
+                      else rep('black', n_stratas)
+        if (length(strata_col) != n_stratas)
+            stop("numbers of strata_col must be", n_stratas)
+
+        ## Events (es relapse, death) colors
+        if (length(col_status) != n_status - 1)
+            stop("numbers of strata_col must be", n_status - 1)
+        
+        ## xlim definition
+        if (is.null(xlim)) {
+            xlim_inf <-  -(max_time/15)
+            xlim_sup <- max_time + (- xlim_inf/3)
+        } else {
+            xlim_inf <- xlim[1]
+            xlim_sup <- xlim[2]
+        }
+
+        ## Univariate plots: cumulative incidence and stacked version
+        if (univariate){
+            
+            ## first graph: not stacked
+            graphics::plot(NA, NA, #fit,
+                           xlim = c(xlim_inf, xlim_sup),
+                           ylim = ylim,
+                           axes = FALSE,
+                           ylab = ylab,
+                           xlab = xlab)
+            graphics::axis(2, las = 1)
+            graphics::axis(1, at = times, labels = times/time_divisor)
+            if (plot_grid)
+                lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
+            graphics::box()
+            ## legend(x = 0, y = 1, legend = status_lab[-1], lty = 1, col = col_status)
+            legend('topleft', legend = status_lab[-1], lty = 1,
+                   col = col_status, cex = cex_legend, bg = 'white')
+            graphics::lines(fit, fun = 'event', conf.int = plot_ci,
+                            col = col_status, ...)
+
+            ## second graph: stacked, TODOHERE
+            
+        }
+
+        ## Bivariate plots: cumulative incidence for each event, stratified by group/strata
+        if (!univariate){
+            ## TODOHERE implement
+        }
+            
+        
+    }
+
+    ## ------------
     ## return Stats
+    ## ------------
     if (univariate)
-        invisible(list('cuminc' = fit, 'estimates' = ret_sfit))
+        invisible(list('fit' = fit,
+                       'estimates' = r_estimates, 'lower' = r_lower, 'upper' = r_upper, 'all' = r_all))
     else
-        invisible(list('cuminc' = fit, 'estimates' = ret_sfit, 'gray_test' = gray))
+        invisible(list('fit' = fit,
+                       'estimates' = r_estimates, 'lower' = r_lower, 'upper' = r_upper, 'all' = r_all,
+                       'gray_test' = gray))
                            
 }
 

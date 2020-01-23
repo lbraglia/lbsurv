@@ -9,15 +9,18 @@ comprisk(
   time = NULL,
   status = NULL,
   strata = NULL,
-  plot = TRUE,
   time_unit = c("days", "weeks", "months", "years"),
   time_by = NULL,
+  plot = TRUE,
+  plot_ci = TRUE,
   ylab = NULL,
   xlab = NULL,
   ylim = c(0L, 1L),
   xlim = NULL,
   test = c("none", "gray"),
+  col_status = seq_len(nlevels(status) - 1),
   cex_test = par("cex") * 0.8,
+  cex_legend = par("cex") * 0.8,
   plot_grid = TRUE,
   legend_cmd = NULL,
   ...
@@ -26,16 +29,19 @@ comprisk(
 \arguments{
 \item{time}{survival time variable}
 
-\item{status}{integer with 0 = censored or factor with
-first level = censored}
+\item{status}{integer with 0 = censored or factor with first level
+= censored}
 
 \item{strata}{Stratifying variable (optional)}
-
-\item{plot}{plot (default = TRUE) or only return estimates?}
 
 \item{time_unit}{Time unit of x axis}
 
 \item{time_by}{Time step x axis (in days) @param quantile_probs}
+
+\item{plot}{plot (default = TRUE) or only return estimates?}
+
+\item{plot_ci}{plot confidence intervalse for estimates (for univariate unstacked and
+multivariate plots)}
 
 \item{ylab}{Y-axis label.}
 
@@ -49,7 +55,12 @@ time_unit will be provided}
 
 \item{test}{tests: 'none' = don't plot tests, 'gray' = gray test}
 
+\item{col_status}{color for exit status (mainly for univariate
+plotting). Otherwise \code{col}, specified in \code{...}, set colors for groups (eg treatment)}
+
 \item{cex_test}{cex parameter for test string}
+
+\item{cex_legend}{cex parameter for legend string}
 
 \item{plot_grid}{plot grid @param plot_n_at_risk Logical value:}
 
