@@ -12,7 +12,7 @@ comprisk(
   time_unit = c("days", "weeks", "months", "years"),
   time_by = NULL,
   plot = TRUE,
-  plot_ci = TRUE,
+  plot_ci = FALSE,
   ylab = NULL,
   xlab = NULL,
   ylim = c(0L, 1L),
