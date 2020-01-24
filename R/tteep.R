@@ -23,7 +23,12 @@
 #' @param prog_date Date: progression date
 #' @param death_date Date: death date
 #' @param last_fup Date: last follow up date
-#' @param ep character: which end points to calculate, default to \code{c("os","pfs","ttp")}
+#' @param ep character: which end points to calculate, default to
+#'     \code{c("os","pfs","ttp")}
+#' @param check_sequential check that date are sequential and warn
+#'     otherwise
+#' @param compete return data suitable for competing events analysis
+#'     as well
 #' @return a \code{data.frame} to be used with \code{\link{cbind}}.
 #' @examples
 #' db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01",
@@ -47,7 +52,9 @@ tteep <- function(start_date = NULL,
                   prog_date  = NULL,
                   death_date = NULL,
                   last_fup   = NULL,
-                  ep = c("os", "pfs", "ttp"))
+                  ep = c("os", "pfs", "ttp"),
+                  check_sequential = TRUE,
+                  compete = TRUE)
 {
 
     if( is.null(start_date) || (! (inherits(start_date, 'Date') || (is.numeric(start_date)))))
@@ -66,8 +73,16 @@ tteep <- function(start_date = NULL,
         stop('ep must be a character')
     
     ## Create indicator variables if missing
-    prog <- if (is.null(prog_date)) rep(NA, length(prog_date)) else !is.na(prog_date)
-    death <- if(is.null(death_date)) rep(NA, length(death_date)) else !is.na(death_date)
+    prog <- if (is.null(prog_date)) rep(NA, length(prog_date))
+            else !is.na(prog_date)
+    death <- if(is.null(death_date)) rep(NA, length(death_date))
+             else !is.na(death_date)
+    
+    all_dates <- data.frame(start_date,
+                            prog_date,
+                            death_date,
+                            last_fup)
+    all_dates_n <- as.data.frame(lapply(all_dates, as.integer))
     
     ## argument preprocessing
     start_date <- as.numeric(start_date)
@@ -75,9 +90,25 @@ tteep <- function(start_date = NULL,
     death_date <- as.numeric(death_date)
     last_fup   <- as.numeric(last_fup)
     ep <- gsub(" ", "", tolower(ep))
-
+    
+    ## ---------------------------
+    ## Check sequential dates 
+    ## ---------------------------
+    if (check_sequential){
+        check1 <- lbmisc::compare_columns(all_dates, operator = '<=')
+        
+        if (is.data.frame(check1) && (nrow(check1) > 0L)) {
+            warning("Some dates are not sequential")
+            print(check1)
+        }
+    }
+        
     ## Return value
     rval <- list()
+
+    ## ---------------------------
+    ## Separated/standard endpoint 
+    ## ---------------------------
     
     ## Overall survival
     if ("os" %in% ep) { 
@@ -114,6 +145,36 @@ tteep <- function(start_date = NULL,
     } 
 
     name_order <- paste(rep(ep, each = 2), c("time", "status"), sep = "_")
-    as.data.frame(rval)[name_order]
+    rval <- as.data.frame(rval)[name_order]
 
+    ## -----------------------
+    ## Competing risk endpoint 
+    ## -----------------------
+    if (compete){
+       
+        rval$first_event_date <- with(
+            all_dates,
+            pmin(prog_date, death_date, last_fup, na.rm = TRUE)
+        )
+
+        rval$first_event_time <- as.integer(
+            rval$first_event_date - all_dates$start_date
+        )
+
+        rval$first_event_status <- factor(
+            apply(all_dates_n[, -1], 1, which.min), 
+            levels = 1:3,
+            labels = c('Progression', 'Death', 'FUP exit')
+        )
+
+        rval$first_event_status <- relevel(
+            rval$first_event_status, 'FUP exit'
+        )
+
+    }
+    
+    ## ------
+    ## Return
+    ## ------
+    rval
 }

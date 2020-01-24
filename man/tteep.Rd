@@ -9,7 +9,9 @@ tteep(
   prog_date = NULL,
   death_date = NULL,
   last_fup = NULL,
-  ep = c("os", "pfs", "ttp")
+  ep = c("os", "pfs", "ttp"),
+  check_sequential = TRUE,
+  compete = TRUE
 )
 }
 \arguments{
@@ -21,7 +23,14 @@ tteep(
 
 \item{last_fup}{Date: last follow up date}
 
-\item{ep}{character: which end points to calculate, default to \code{c("os","pfs","ttp")}}
+\item{ep}{character: which end points to calculate, default to
+\code{c("os","pfs","ttp")}}
+
+\item{check_sequential}{check that date are sequential and warn
+otherwise}
+
+\item{compete}{return data suitable for competing events analysis
+as well}
 }
 \value{
 a \code{data.frame} to be used with \code{\link{cbind}}.

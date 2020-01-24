@@ -16,6 +16,7 @@
 #' @importFrom lbmisc add_grid
 #' @importFrom lbmisc upcase
 #' @importFrom lbmisc pretty_pval
+#' @importFrom lbmisc compare_columns
 #' @importFrom stats aggregate
 #' @importFrom stats coefficients
 #' @importFrom stats pchisq
