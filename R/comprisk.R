@@ -13,8 +13,8 @@
 #' @param plot plot (default = TRUE) or only return estimates?
 # quantile calculated (default to 0.5, aka median) @param main Graph
 # main title
-#' @param plot_ci plot confidence intervalse for estimates (for univariate unstacked and
-#'    multivariate plots)
+#' @param plot_ci plot confidence intervalse for estimates (for
+#'     univariate unstacked and multivariate plots)
 #' @param ylab Y-axis label.
 #' @param xlab X-axis label. If NULL a suitable default based on
 #'     time_unit will be provided
@@ -28,23 +28,29 @@
 # \code{conf_int = 'alpha'} (splitted by number of groups)
 #' @param test tests: 'none' = don't plot tests, 'gray' = gray test
 #' @param col_status color for exit status (mainly for univariate
-#'     plotting). Otherwise \code{col}, specified in \code{...}, set colors for groups (eg treatment)
+#'     plotting)
+#' @param col_strata color for group status (mainly for bivariate
+#'     plotting)
 #' @param cex_test cex parameter for test string
 #' @param cex_legend cex parameter for legend string
 #' @param plot_grid plot grid @param plot_n_at_risk Logical value:
-#' @param legend_cmd Graph command to add legend, as string
-#' @param ... Further \code{\link{lines.survfit}} parameters
+# @param legend_cmd Graph command to add legend, as string @param
+# ... Further \code{\link{lines.survfit}} parameters
 #' @examples
 #' \dontrun{
-#' ## Gray test validation
+#'
 #' library(lbdatasets)
 #' (ci.fns <- with(mros, cmprsk::cuminc(time, status, cutbmd))$Tests)
-#' ## example
-#' res <- with(mros, comprisk(time = time, status = as.integer(status),
-#'                            strata = cutbmd))
-#' res$gray_test
+#'
+#' ## Full example
+#' par(mfrow = c(1,2))
+#' res <- comprisk(time = mros$time,
+#'                 status = factor(mros$status, levels = 0:2,
+#'                                 labels = c("Censored", "Fractured", "Death")),
+#'                 strata = factor(mros$cutbmd, levels = 1:2, labels = c('LowBMD', 'HighBMD')),
+#'                 time_by = 50, ylim = c(0, 0.25), col = c('black', 'red'))
 #' }
-#' 
+#'
 #' @export
 comprisk <- function(time = NULL, status = NULL,
                      ## NULL = non stratified, otherwise stratifying variable
@@ -80,23 +86,30 @@ comprisk <- function(time = NULL, status = NULL,
                      ## conf_int_alpha = 0.8,
                      ## Test: none = don't plot tests, logr = logranktest,
                      ##       hr = hazratio, both = both
-                     test = c('none', 'gray'),
+                     test = c('gray', 'none'),
                      ## color for status levels
                      col_status = seq_len(nlevels(status) - 1),
+                     col_strata = seq_len(nlevels(strata)),
                      cex_test = par("cex") * 0.8,
                      cex_legend = par("cex") * 0.8,
                      ## plot grid
-                     plot_grid = TRUE,
+                     plot_grid = TRUE#,
                      ## ## Plot number ad risk in the km
                      ## plot_n_at_risk = TRUE,
                      ## cex_n_at_risk = par("cex") * 0.8,
-                     ## Graph command to add legend, as string
-                     legend_cmd = NULL,
+                     ## ## Graph command to add legend, as string
+                     ## legend_cmd = NULL#,
                      ## Further lines.survfit params
-                     ...
+                     #...      ## perché non va pkmdn
                      )
 {
     
+    ## Argument matching, ... 'handling'
+    time_unit <- match.arg(time_unit)
+    test <- match.arg(test)
+    ## dots <- list(...)
+
+    ## input check
     if (! (is.integer(status) || is.factor(status)))
         stop("'status' must be an integer (0=censored) or a factor(first.")
     if (is.null(time)) stop("'time' needed.")
@@ -120,15 +133,13 @@ comprisk <- function(time = NULL, status = NULL,
     if (! (is.null(ylim) || (is.numeric(ylim) && (2 == length(ylim)))))
         stop("'ylim' must be NULL or numeric vector of 2 elements")
     
-    ## Argument matching, ... 'handling'
-    time_unit <- match.arg(time_unit)
-    test <- match.arg(test)
-    dots <- list(...)
-
+    
     ## Coerce status to a factor for uniformity
-    status   <- factor(status)
-    n_status <- nlevels(status)
+    status     <- factor(status)
+    n_status   <- nlevels(status)
     status_lab <- levels(status)
+    event_lab  <- status_lab[-1]
+    n_event    <- n_status - 1
     
     ## Default xlab and ylab if NULL is provided
     if (is.null(xlab))
@@ -143,7 +154,7 @@ comprisk <- function(time = NULL, status = NULL,
     
     ## Check if it's a univariate or stratified plot; setup the
     ## estimates dataset and parameter defaults accordingly
-    if (is.null(strata)) {
+    if (is.null(strata)){
         db <- data.frame(time = time, status = status)
         db <- lbmisc::NA_remove(db)
         mod_formula <- survival::Surv(time = time, event = status) ~ 1
@@ -165,7 +176,7 @@ comprisk <- function(time = NULL, status = NULL,
         ##     test <- 'logr'
         ## }
     }
-
+    
     ## ---------
     ## Estimates
     ## ---------
@@ -179,7 +190,7 @@ comprisk <- function(time = NULL, status = NULL,
     ## if not specified make 4 step
     times <- if (is.null(time_by)) seq(0, max_time, length = 4)
              else seq(0, max_time, by = time_by * time_divisor)
-
+    
     ## Summary estimates for presentation purposes
     est_times <- seq(from = 0L, to = max(times), by = time_divisor)
     sfit2 <- summary(fit, times = est_times)
@@ -202,7 +213,7 @@ comprisk <- function(time = NULL, status = NULL,
         r_lower     <- cbind(preamble, lower)
         r_upper     <- cbind(preamble, upper)
     }
-
+    
     ## all estimates (with lower and upper CI)
     r_all <- {
         indexes <- matrix(seq_len(3L * n_status), ncol = n_status, byrow = TRUE)
@@ -212,64 +223,72 @@ comprisk <- function(time = NULL, status = NULL,
                                setNames(upper, rep('up CI' , ncol(upper)))) [, indexes]
         cbind(preamble, all_estimates)
     }
-
+    
     names(r_estimates)[1] <- names(r_lower)[1] <-
         names(r_upper)[1] <- names(r_all)[1]   <- time_unit
-
+    
     ## -----
     ## Tests
     ## -----
     
     if( !univariate ) {
-        ## Gray test
-        gray <- data.frame(with(db, cmprsk::cuminc(ftime = time,
-                                        ## better integer with 0 as censored
-                                        fstatus = as.integer(status) - 1L,
-                                        group = strata)$Tests[, c(1,3,2)]))
         
-        rownames(gray) <- status_lab[-1]
-        
-        ## gray_strings <- sprintf('Log-rank Test=%.2f, df=%d, p%s',	
-        ##                         gray$chisq, 
-        ##                         gray$df, 
-        ##                         lbmisc::pretty_pval(gray$p, equal = TRUE))
-        
-        ## ## Cox Model (and his summary)
-        ## cox <- survival::coxph(mod_formula, data = db)
-        ## scox <- summary(cox)
-        ## scox_coefs <- stats::coefficients(scox)
-        ## hr_string  <- sprintf('HR=%.2f (95%% CI, %.2f-%.2f, p%s)',
-        ##                       scox_coefs[2],
-        ##                       scox$conf.int[3],
-        ##                       scox$conf.int[4],
-        ##                       lbmisc::pretty_pval(scox_coefs[5], equal = TRUE))
-        ## both_string <- paste(logr_string, hr_string, sep = ' - ')
-	
-        ## ## Choose which stat to print in the graph
-        ## test_string <- switch(test,
-        ##                       logr = logr_string,
-        ##                       hr = hr_string,
-        ##                       both= both_string)
+        if ('gray' %in% test) {
+            ## Gray test
+            gray <- data.frame(with(db, cmprsk::cuminc(ftime = time,
+                                                       ## better integer with 0 as censored
+                                                       fstatus = as.integer(status) - 1L,
+                                                       group = strata)$Tests[, c(1,3,2)]))
+            rownames(gray) <- event_lab
+            
+            gray_strings <- sprintf('Gray Test=%.2f, df=%d, p%s',
+                                    gray$stat,
+                                    gray$df,
+                                    lbmisc::pretty_pval(gray$pv, equal = TRUE))
+            test_strings <- gray_strings
+            
+            ## ## Cox Model (and his summary)
+            ## cox <- survival::coxph(mod_formula, data = db)
+            ## scox <- summary(cox)
+            ## scox_coefs <- stats::coefficients(scox)
+            ## hr_string  <- sprintf('HR=%.2f (95%% CI, %.2f-%.2f, p%s)',
+            ##                       scox_coefs[2],
+            ##                       scox$conf.int[3],
+            ##                       scox$conf.int[4],
+            ##                       lbmisc::pretty_pval(scox_coefs[5], equal = TRUE))
+            ## both_string <- paste(logr_string, hr_string, sep = ' - ')
+            
+            ## ## Choose which stat to print in the graph
+            ## test_string <- switch(test,
+            ##                       logr = logr_string,
+            ##                       hr = hr_string,
+            ##                       both= both_string)
+            
+        } else if ('none' %in% test) {
+            gray <- NA
+            test_strings <- rep("", n_event)
+        } else
+            stop("something wrong with test")
 
-        ## test_string <- gray_string
     }
-
+    
     ## ------------
     ## plotting
     ## ------------
     if (plot) {
-
+        
         ## Color set-up
         ## Strata (eg treatment) cols: if not given, set it black;
         ## then check for length
-        strata_col <- if ('col' %in% names(dots)) dots$col
-                      else rep('black', n_stratas)
-        if (length(strata_col) != n_stratas)
-            stop("numbers of strata_col must be", n_stratas)
-
+        ## browser()
+        ## col_strata <- if ('col' %in% names(dots)) dots$col
+        ##               else rep('black', n_stratas)
+        if (length(col_strata) != n_stratas)
+            stop("numbers of col must be", n_stratas)
+        
         ## Events (es relapse, death) colors
-        if (length(col_status) != n_status - 1)
-            stop("numbers of strata_col must be", n_status - 1)
+        if (length(col_status) != n_event)
+            stop("numbers of col_status must be", n_event)
         
         ## xlim definition
         if (is.null(xlim)) {
@@ -295,8 +314,7 @@ comprisk <- function(time = NULL, status = NULL,
             if (plot_grid)
                 lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
             graphics::box()
-            ## legend(x = 0, y = 1, legend = status_lab[-1], lty = 1, col = col_status)
-            legend('topleft', legend = status_lab[-1], lty = 1,
+            legend('topleft', legend = event_lab, lty = 1,
                    col = col_status, cex = cex_legend, bg = 'white')
             graphics::lines(fit, fun = 'event', conf.int = plot_ci,
                             col = col_status, ...)
@@ -307,12 +325,40 @@ comprisk <- function(time = NULL, status = NULL,
 
         ## Bivariate plots: cumulative incidence for each event, stratified by group/strata
         if (!univariate){
-            ## TODOHERE implement
-        }
+
+            comprisk_event_plotter <- function(fit, event, test = NULL){
+
+                ylab <- sprintf('Pr(%s)', event)
+                graphics::plot(NA, NA, #fit,
+                               xlim = c(xlim_inf, xlim_sup),
+                               ylim = ylim,
+                               axes = FALSE,
+                               ylab = ylab,
+                               xlab = xlab)
+                graphics::axis(2, las = 1)
+                graphics::axis(1, at = times, labels = times/time_divisor)
+                if (plot_grid)
+                    lbmisc::add_grid(at_x = times, at_y = graphics::axTicks(2))
+                graphics::box()
+                legend('topleft',
+                       legend = strata_labels, 
+                       col = col_strata,
+                       lty = 1,
+                       cex = cex_legend, bg = 'white')
+                graphics::lines(fit[, event], fun = 'event',
+                                conf.int = plot_ci,
+                                col = col_strata)
+                graphics::mtext(text = test, line = 0.2,
+                                cex = cex_test,
+                                family = 'sans', font = 3)
+            }
             
+            Map(comprisk_event_plotter, list(fit), as.list(event_lab), as.list(test_strings))
+
+        }
         
     }
-
+        
     ## ------------
     ## return Stats
     ## ------------
@@ -340,3 +386,5 @@ default_time_by <- function(tu){ # given time unit
     (tu %in% 'months' *  12)  + 
     (tu %in% 'years'  *   1)
 }
+
+    
