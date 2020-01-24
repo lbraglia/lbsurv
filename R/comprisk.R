@@ -50,7 +50,7 @@
 #'                                 labels = c('LowBMD', 'HighBMD')),
 #'                 time_by = 50, ylim = c(0, 0.25),
 #'                 col_strata = c('red', 'black'), xlab = 'Weeks')
-#'
+#' }
 #' @export
 comprisk <- function(time = NULL, status = NULL,
                      ## NULL = non stratified, otherwise stratifying variable
@@ -216,11 +216,13 @@ comprisk <- function(time = NULL, status = NULL,
     
     ## all estimates (with lower and upper CI)
     r_all <- {
-        indexes <- matrix(seq_len(3L * n_status), ncol = n_status, byrow = TRUE)
+        indexes <- matrix(seq_len(3L * n_status), ncol = n_status,
+                          byrow = TRUE)
         dim(indexes) <- NULL
-        all_estimates <- cbind(probs,
-                               setNames(lower, rep('low CI', ncol(lower))),
-                               setNames(upper, rep('up CI' , ncol(upper)))) [, indexes]
+        all_estimates <- cbind(
+            probs,
+            setNames(lower, rep('low CI', ncol(lower))),
+            setNames(upper, rep('up CI' , ncol(upper))))[, indexes]
         cbind(preamble, all_estimates)
     }
     
@@ -235,10 +237,12 @@ comprisk <- function(time = NULL, status = NULL,
         
         if ('gray' %in% test) {
             ## Gray test
-            gray <- data.frame(with(db, cmprsk::cuminc(ftime = time,
-                                                       ## better integer with 0 as censored
-                                                       fstatus = as.integer(status) - 1L,
-                                                       group = strata)$Tests[, c(1,3,2)]))
+            gray <- data.frame(
+                with(db,
+                     cmprsk::cuminc(ftime = time,
+                                    ## better integer with 0 as censored
+                                    fstatus = as.integer(status) - 1L,
+                                    group = strata)$Tests[, c(1,3,2)]))
             rownames(gray) <- event_lab
             
             gray_strings <- sprintf('Gray Test=%.2f, df=%d, p%s',
@@ -317,13 +321,15 @@ comprisk <- function(time = NULL, status = NULL,
             legend('topleft', legend = event_lab, lty = 1,
                    col = col_status, cex = cex_legend, bg = 'white')
             graphics::lines(fit, fun = 'event', conf.int = plot_ci,
-                            col = col_status, ...)
+                            col = col_status) ##...)
+            
 
             ## second graph: stacked, TODOHERE
             
         }
 
-        ## Bivariate plots: cumulative incidence for each event, stratified by group/strata
+        ## Bivariate plots: cumulative incidence for each event,
+        ## stratified by group/strata
         if (!univariate){
 
             comprisk_event_plotter <- function(fit, event, test = NULL){
@@ -353,7 +359,10 @@ comprisk <- function(time = NULL, status = NULL,
                                 family = 'sans', font = 3)
             }
             
-            Map(comprisk_event_plotter, list(fit), as.list(event_lab), as.list(test_strings))
+            Map(comprisk_event_plotter,
+                list(fit),
+                as.list(event_lab),
+                as.list(test_strings))
 
         }
         
@@ -364,10 +373,16 @@ comprisk <- function(time = NULL, status = NULL,
     ## ------------
     if (univariate)
         invisible(list('fit' = fit,
-                       'estimates' = r_estimates, 'lower' = r_lower, 'upper' = r_upper, 'all' = r_all))
+                       'estimates' = r_estimates,
+                       'lower' = r_lower,
+                       'upper' = r_upper,
+                       'all' = r_all))
     else
         invisible(list('fit' = fit,
-                       'estimates' = r_estimates, 'lower' = r_lower, 'upper' = r_upper, 'all' = r_all,
+                       'estimates' = r_estimates,
+                       'lower' = r_lower,
+                       'upper' = r_upper,
+                       'all' = r_all,
                        'gray_test' = gray))
                            
 }
@@ -378,7 +393,6 @@ time_unit_to_time_divisor <- function(tu){ # given time unit
         (tu %in% 'months' *  30.43) + 
         (tu %in% 'years'  * 365.25)
 }
-
 
 default_time_by <- function(tu){ # given time unit
     (tu %in% 'days'   *  30)  + 

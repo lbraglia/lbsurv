@@ -74,15 +74,15 @@ setting
 \dontrun{
 
 library(lbdatasets)
-(ci.fns <- with(mros, cmprsk::cuminc(time, status, cutbmd))$Tests)
 
-## Full example
 par(mfrow = c(1,2))
 res <- comprisk(time = mros$time,
                 status = factor(mros$status, levels = 0:2,
-                                labels = c("Censored", "Fractured", "Death")),
-                strata = factor(mros$cutbmd, levels = 1:2, labels = c('LowBMD', 'HighBMD')),
-                time_by = 50, ylim = c(0, 0.25), col = c('black', 'red'))
+                                labels = c("Censored", "Fractured",
+                                           "Death")),
+                strata = factor(mros$cutbmd, levels = 1:2,
+                                labels = c('LowBMD', 'HighBMD')),
+                time_by = 50, ylim = c(0, 0.25),
+                col_strata = c('red', 'black'), xlab = 'Weeks')
 }
-
 }
