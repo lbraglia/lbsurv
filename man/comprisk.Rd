@@ -17,13 +17,12 @@ comprisk(
   xlab = NULL,
   ylim = c(0L, 1L),
   xlim = NULL,
-  test = c("none", "gray"),
+  test = c("gray", "none"),
   col_status = seq_len(nlevels(status) - 1),
+  col_strata = seq_len(nlevels(strata)),
   cex_test = par("cex") * 0.8,
   cex_legend = par("cex") * 0.8,
-  plot_grid = TRUE,
-  legend_cmd = NULL,
-  ...
+  plot_grid = TRUE
 )
 }
 \arguments{
@@ -40,8 +39,8 @@ comprisk(
 
 \item{plot}{plot (default = TRUE) or only return estimates?}
 
-\item{plot_ci}{plot confidence intervalse for estimates (for univariate unstacked and
-multivariate plots)}
+\item{plot_ci}{plot confidence intervalse for estimates (for
+univariate unstacked and multivariate plots)}
 
 \item{ylab}{Y-axis label.}
 
@@ -56,17 +55,16 @@ time_unit will be provided}
 \item{test}{tests: 'none' = don't plot tests, 'gray' = gray test}
 
 \item{col_status}{color for exit status (mainly for univariate
-plotting). Otherwise \code{col}, specified in \code{...}, set colors for groups (eg treatment)}
+plotting)}
+
+\item{col_strata}{color for group status (mainly for bivariate
+plotting)}
 
 \item{cex_test}{cex parameter for test string}
 
 \item{cex_legend}{cex parameter for legend string}
 
 \item{plot_grid}{plot grid @param plot_n_at_risk Logical value:}
-
-\item{legend_cmd}{Graph command to add legend, as string}
-
-\item{...}{Further \code{\link{lines.survfit}} parameters}
 }
 \description{
 Plot and compare cumulative/crude incidence in a competing risk
