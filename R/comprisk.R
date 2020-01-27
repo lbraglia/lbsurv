@@ -9,10 +9,11 @@
 #'     = censored
 #' @param strata Stratifying variable (optional)
 #' @param time_unit Time unit of x axis
-#' @param time_by Time step x axis (in days) @param quantile_probs
-#' @param plot plot (default = TRUE) or only return estimates?
+#' @param time_by Time step x axis (in days)
+## @param quantile_probs
 # quantile calculated (default to 0.5, aka median) @param main Graph
 # main title
+#' @param plot plot (default = TRUE) or only return estimates?
 #' @param plot_ci plot confidence intervalse for estimates (for
 #'     univariate unstacked and multivariate plots)
 #' @param ylab Y-axis label.

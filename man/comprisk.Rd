@@ -35,7 +35,7 @@ comprisk(
 
 \item{time_unit}{Time unit of x axis}
 
-\item{time_by}{Time step x axis (in days) @param quantile_probs}
+\item{time_by}{Time step x axis (in days)}
 
 \item{plot}{plot (default = TRUE) or only return estimates?}
 

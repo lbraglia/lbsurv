@@ -3,7 +3,7 @@
 S3method(xtable,summary.coxph)
 export(censor_at)
 export(comprisk)
-export(fup_completeness)
+export(fup_stats)
 export(ill_death)
 export(km)
 export(km_legend)
