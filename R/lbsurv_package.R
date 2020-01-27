@@ -12,6 +12,7 @@
 #' @importFrom graphics par
 #' @importFrom graphics plot
 #' @importFrom graphics polygon
+#' @importFrom lbmisc which.min2
 #' @importFrom lbmisc NA_remove
 #' @importFrom lbmisc add_grid
 #' @importFrom lbmisc upcase

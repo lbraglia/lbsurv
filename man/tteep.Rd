@@ -10,8 +10,9 @@ tteep(
   death_date = NULL,
   last_fup = NULL,
   ep = c("os", "pfs", "ttp"),
-  check_sequential = TRUE,
-  compete = TRUE
+  sequential_check = TRUE,
+  sequential_strict = TRUE,
+  comprisk = TRUE
 )
 }
 \arguments{
@@ -26,10 +27,14 @@ tteep(
 \item{ep}{character: which end points to calculate, default to
 \code{c("os","pfs","ttp")}}
 
-\item{check_sequential}{check that date are sequential and warn
+\item{sequential_check}{check that date are sequential and warn
 otherwise}
 
-\item{compete}{return data suitable for competing events analysis
+\item{sequential_strict}{set to missing all times (and
+corresponding statuses) that due to not sequential dates are
+negative}
+
+\item{comprisk}{return data suitable for competing events analysis
 as well}
 }
 \value{
@@ -57,14 +62,14 @@ Time to progression (TTP) is computed as time from \code{start_date} to
 (\code{last_fup}) or death (\code{death_date}) whichever comes first.
 }
 \examples{
-db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01",
-                                        "1900-01-01", NA, "1900-01-01", NA)),
-                 prog_date  = as.Date(c("1900-03-01", "1900-03-01", NA, NA, NA, NA, NA)),
-                 death_date = as.Date(c("1900-06-01", NA, "1900-06-01", NA, NA, NA, NA)),
-                 last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01",
-                                        "1900-12-31", "1900-12-31", NA, NA)))
+\dontrun{
+db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01", "1900-01-01",          NA, "1900-01-01", "1900-04-01", NA)),
+                 prog_date  = as.Date(c("1900-03-01", "1900-03-01",           NA,           NA,          NA,           NA, "1900-02-01", NA)),
+                 death_date = as.Date(c("1900-06-01",           NA, "1900-06-01",           NA,          NA,           NA, "1900-06-01", NA)),
+                 last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01", "1900-12-31", "1900-12-31",          NA, "1900-06-01", NA)))
 db
 with(db, tteep(start_date, prog_date, death_date, last_fup))
+} 
 db2 <- data.frame(start_date = c(0,  0,  0,  0, NA,  0, NA),
                   prog_date  = c(3,  3, NA, NA, NA, NA, NA),
                   death_date = c(6, NA,  6, NA, NA, NA, NA),

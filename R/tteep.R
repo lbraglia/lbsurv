@@ -25,20 +25,23 @@
 #' @param last_fup Date: last follow up date
 #' @param ep character: which end points to calculate, default to
 #'     \code{c("os","pfs","ttp")}
-#' @param check_sequential check that date are sequential and warn
+#' @param sequential_check check that date are sequential and warn
 #'     otherwise
-#' @param compete return data suitable for competing events analysis
+#' @param sequential_strict set to missing all times (and
+#'     corresponding statuses) that due to not sequential dates are
+#'     negative
+#' @param comprisk return data suitable for competing events analysis
 #'     as well
 #' @return a \code{data.frame} to be used with \code{\link{cbind}}.
 #' @examples
-#' db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01",
-#'                                         "1900-01-01", NA, "1900-01-01", NA)),
-#'                  prog_date  = as.Date(c("1900-03-01", "1900-03-01", NA, NA, NA, NA, NA)),
-#'                  death_date = as.Date(c("1900-06-01", NA, "1900-06-01", NA, NA, NA, NA)),
-#'                  last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01",
-#'                                         "1900-12-31", "1900-12-31", NA, NA)))
+#' \dontrun{
+#' db <- data.frame(start_date = as.Date(c("1900-01-01", "1900-01-01", "1900-01-01", "1900-01-01",          NA, "1900-01-01", "1900-04-01", NA)),
+#'                  prog_date  = as.Date(c("1900-03-01", "1900-03-01",           NA,           NA,          NA,           NA, "1900-02-01", NA)),
+#'                  death_date = as.Date(c("1900-06-01",           NA, "1900-06-01",           NA,          NA,           NA, "1900-06-01", NA)),
+#'                  last_fup   = as.Date(c("1900-06-01", "1900-12-31", "1900-06-01", "1900-12-31", "1900-12-31",          NA, "1900-06-01", NA)))
 #' db
 #' with(db, tteep(start_date, prog_date, death_date, last_fup))
+#' } 
 #' db2 <- data.frame(start_date = c(0,  0,  0,  0, NA,  0, NA),
 #'                   prog_date  = c(3,  3, NA, NA, NA, NA, NA),
 #'                   death_date = c(6, NA,  6, NA, NA, NA, NA),
@@ -53,8 +56,9 @@ tteep <- function(start_date = NULL,
                   death_date = NULL,
                   last_fup   = NULL,
                   ep = c("os", "pfs", "ttp"),
-                  check_sequential = TRUE,
-                  compete = TRUE)
+                  sequential_check   = TRUE,
+                  sequential_strict = TRUE,
+                  comprisk = TRUE)
 {
 
     if( is.null(start_date) || (! (inherits(start_date, 'Date') || (is.numeric(start_date)))))
@@ -94,7 +98,7 @@ tteep <- function(start_date = NULL,
     ## ---------------------------
     ## Check sequential dates 
     ## ---------------------------
-    if (check_sequential){
+    if (sequential_check){
         check1 <- lbmisc::compare_columns(all_dates, operator = '<=')
         
         if (is.data.frame(check1) && (nrow(check1) > 0L)) {
@@ -115,8 +119,16 @@ tteep <- function(start_date = NULL,
         rval$os_status <- os_status <- as.integer(death)
         os_last_date <- ifelse(os_status, death_date, last_fup)
         rval$os_time <- os_last_date - start_date
-        if (any(rval$os_time < 0, na.rm = TRUE))
-            warning("some OS times are < 0")
+        ## if time is NA (eg missing start date, but not death) set time to NA
+        rval$os_status[is.na(rval$os_time)] <- NA
+        ## checks
+        neg_times <- (!is.na(rval$os_time)) & rval$os_time < 0
+        any_neg <- any(neg_times, na.rm = TRUE)
+        if (any_neg) warning("some OS times are < 0")
+        if (sequential_strict && any_neg) {
+            rval$os_time[neg_times]   <- NA
+            rval$os_status[neg_times] <- NA
+        }
     } 
     ## Progression Free Survival
     if ("pfs" %in% ep) { 
@@ -128,8 +140,16 @@ tteep <- function(start_date = NULL,
         min_prog_death[!is.finite(min_prog_death)] <- NA
         pfs_last_date <- ifelse(pfs_status, min_prog_death, last_fup)
         rval$pfs_time <- pfs_last_date - start_date
-        if (any(rval$pfs_time < 0, na.rm = TRUE))
-            warning("some PFS times are < 0")
+        ## if time is NA (eg missing start date, but not death) set time to NA
+        rval$pfs_status[is.na(rval$pfs_time)] <- NA
+        ## checks
+        neg_times <- (!is.na(rval$pfs_time)) & rval$pfs_time < 0
+        any_neg <- any(neg_times, na.rm = TRUE)
+        if (any_neg) warning("some PFS times are < 0")
+        if (sequential_strict && any_neg) {
+            rval$pfs_time[neg_times]   <- NA
+            rval$pfs_status[neg_times] <- NA
+        }
     } 
     ## Time to progression
     if ("ttp" %in% ep) {
@@ -140,17 +160,25 @@ tteep <- function(start_date = NULL,
         min_death_lfup[!is.finite(min_death_lfup)] <- NA
         ttp_last_date <- ifelse(ttp_status, prog_date, min_death_lfup)
         rval$ttp_time <- ttp_last_date - start_date
-        if (any(rval$ttp_time < 0, na.rm = TRUE))
-            warning("some TTP times are < 0")
-    } 
-
+        ## if time is NA (eg missing start date, but not death) set time to NA
+        rval$ttp_status[is.na(rval$ttp_time)] <- NA
+        ## checks
+        neg_times <- (!is.na(rval$ttp_time)) & rval$ttp_time < 0
+        any_neg <- any(neg_times, na.rm = TRUE)
+        if (any_neg) warning("some TTP times are < 0")
+        if (sequential_strict && any_neg) {
+            rval$ttp_time[neg_times]   <- NA
+            rval$ttp_status[neg_times] <- NA
+        }
+    }
+    
     name_order <- paste(rep(ep, each = 2), c("time", "status"), sep = "_")
     rval <- as.data.frame(rval)[name_order]
 
     ## -----------------------
     ## Competing risk endpoint 
     ## -----------------------
-    if (compete){
+    if (comprisk){
        
         rval$first_event_date <- with(
             all_dates,
@@ -162,7 +190,7 @@ tteep <- function(start_date = NULL,
         )
 
         rval$first_event_status <- factor(
-            apply(all_dates_n[, -1], 1, which.min), 
+            apply(all_dates_n[, -1], 1, lbmisc::which.min2), 
             levels = 1:3,
             labels = c('Progression', 'Death', 'FUP exit')
         )
@@ -171,6 +199,19 @@ tteep <- function(start_date = NULL,
             rval$first_event_status, 'FUP exit'
         )
 
+        ## if time is NA (eg missing start date, but not death) set time to NA
+        rval$first_event_status[is.na(rval$first_event_time)] <- NA
+        ## checks
+        neg_times <-
+            (!is.na(rval$first_event_time)) &
+            rval$first_event_time < 0
+        any_neg <- any(neg_times, na.rm = TRUE)
+        if (any_neg) warning("some first times are < 0")
+        if (sequential_strict && any_neg) {
+            rval$first_event_time[neg_times]   <- NA
+            rval$first_event_status[neg_times] <- NA
+        }
+        
     }
     
     ## ------
