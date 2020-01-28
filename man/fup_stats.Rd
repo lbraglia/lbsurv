@@ -7,9 +7,8 @@
 fup_stats(
   time = NULL,
   status = NULL,
-  cutoff = seq(1, max(time), length = 10),
   strata = NULL,
-  time_unit = c("months", "days", "weeks", "years"),
+  time_unit = c("days", "weeks", "months", "years"),
   time_by = NULL
 )
 }
@@ -18,13 +17,13 @@ fup_stats(
 
 \item{status}{event indicator}
 
-\item{cutoff}{(in days?)}
-
 \item{strata}{group}
 
 \item{time_unit}{Time unit table returned}
 
 \item{time_by}{Time step for completeness table axis (in days)}
+
+\item{cutoff}{(in days?)}
 }
 \value{
 A data.frame with a global C and a C for each group
@@ -43,9 +42,11 @@ group  <- c("A", "A", "B", "B" )
 ## quantify fup completeness to 200 days (eg minimum potential
 ## follow up in a hypotethic prospective trial)
 
-fup_stats(time = time, status = status,
-          cutoff = seq(150, 250, 10),
-          strata = group)
+fup_stats(time = time, status = status, strata = group, time_by = 10)
+
+time2   <- as.numeric(1:(365*3 + 1))
+status2 <- rep(c(0,1), 548) 
+fup_stats(time = time2, status = status2, time_unit = 'year')
 
 }
 \references{

@@ -23,18 +23,20 @@
 #' ## quantify fup completeness to 200 days (eg minimum potential
 #' ## follow up in a hypotethic prospective trial)
 #' 
-#' fup_stats(time = time, status = status,
-#'           cutoff = seq(150, 250, 10),
-#'           strata = group)
+#' fup_stats(time = time, status = status, strata = group, time_by = 10)
+#'
+#' time2   <- as.numeric(1:(365*3 + 1))
+#' status2 <- rep(c(0,1), 548) 
+#' fup_stats(time = time2, status = status2, time_unit = 'year')
 #' 
 #' @export
 fup_stats <- function(time = NULL,
                       status = NULL,
-                      cutoff = seq(1, max(time), length = 10),
+                      # cutoff = seq(1, max(time), length = 10),
                       strata = NULL,
-                      time_unit = c('months',
-                                    'days',
+                      time_unit = c('days',
                                     'weeks',
+                                    'months',
                                     'years'),
                       time_by = NULL
                       )
@@ -44,23 +46,30 @@ fup_stats <- function(time = NULL,
         stop('time is mandatory and must be numeric.')
     if (! is.numeric(status))
         stop('status is mandatory and must be numeric.')
-    if (! is.numeric(cutoff))
-        stop('censoring_time is mandatory and must be numeric.')
+    ## if (! is.numeric(cutoff))
+    ##     stop('censoring_time is mandatory and must be numeric.')
+    if(! (is.null(time_by) || is.numeric(time_by)))
+        stop("'time_by' must be NULL or numeric")
 
     if (! all(status %in% c(NA, 0, 1)))
         stop('statuses must be 0, 1 or NA.')
-
-    ## time unit and divisor
+    
+    ## time unit, divisor, time_by
     time_unit <- match.arg(time_unit)
     time_divisor <- time_unit_to_time_divisor(time_unit)
-       
+    if (is.null(time_by)) time_by <- default_time_by(time_unit)
+    ## times for completeness table
+    max_time <- max(time, na.rm = TRUE)
+    times <- seq(0, max_time, by = time_by * time_divisor)
+    
+    ## --------------------------------------
     ## median follow up by reverse KM method
+    ## --------------------------------------
     if (is.null(strata)){
         local_db <- data.frame(time, status)
     } else
         local_db <- data.frame(time, status, strata)
 
-    # browser()
     f_overall <-
         survival::Surv(time = time, event = 1 - status) ~ 1
     fit_overall <-
@@ -84,8 +93,10 @@ fup_stats <- function(time = NULL,
                         median_fup)
     rownames(median_fup) <- NULL
                         
+    ## --------------------------------------
     ## completeness
-    completeness <- lapply(cutoff, function(x){
+    ## --------------------------------------
+    completeness <- lapply(times, function(x){
         db <- censor_at(time = time,
                         status = status,
                         censoring_time = x)
