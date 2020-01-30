@@ -82,11 +82,10 @@ tteep <- function(start_date = NULL,
     death <- if(is.null(death_date)) rep(NA, length(death_date))
              else !is.na(death_date)
     
-    all_dates <- data.frame(start_date,
-                            prog_date,
-                            death_date,
-                            last_fup)
-    all_dates_n <- as.data.frame(lapply(all_dates, as.integer))
+    all_dates <- data.frame('start_date' = start_date,
+                            'prog_date' =  prog_date,
+                            'death_date' = death_date,
+                            'last_fup' = last_fup)
     
     ## argument preprocessing
     start_date <- as.numeric(start_date)
@@ -179,9 +178,19 @@ tteep <- function(start_date = NULL,
     ## Competing risk endpoint 
     ## -----------------------
     if (comprisk){
+
+        ## remove dates before start date (data.frame with only
+        ## progression, death and exit from FUP
+        all_dates2 <- Map(date_cleaner,
+                         list(all_dates[, 1])[rep(1, 3)],
+                         as.list(all_dates[, -1]))
+        all_dates2 <- as.data.frame(all_dates2)
+        names(all_dates2) <- names(all_dates)[-1]
+        ## same numeric data.frame
+        all_dates2_n <- as.data.frame(lapply(all_dates2, as.integer))
        
         rval$first_event_date <- with(
-            all_dates,
+            all_dates2,
             pmin(prog_date, death_date, last_fup, na.rm = TRUE)
         )
 
@@ -190,7 +199,7 @@ tteep <- function(start_date = NULL,
         )
 
         rval$first_event_status <- factor(
-            apply(all_dates_n[, -1], 1, lbmisc::which.min2), 
+            apply(all_dates2_n, 1, lbmisc::which.min2),
             levels = 1:3,
             labels = c('Progression', 'Death', 'FUP exit')
         )
@@ -219,3 +228,13 @@ tteep <- function(start_date = NULL,
     ## ------
     rval
 }
+    
+date_cleaner <- function(base, date) {
+    check <- date < base
+    date[check %in% TRUE] <- NA
+    date
+}
+
+    
+
+    
