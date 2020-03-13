@@ -4,6 +4,3 @@
 \name{lbsurv}
 \alias{lbsurv}
 \title{lbsurv.}
-\description{
-lbsurv.
-}
