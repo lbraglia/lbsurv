@@ -1,0 +1,144 @@
+
+contal <- function(x, time, status, cutvar){
+    ## worker per la procedura di cutoff, viene restituito il cutoff 
+    ## numerico e il p associato
+    ## x è un data.frame su cui si applica la procedura di contal per trovare
+    ## il cutoff. 
+    ## time, status, cutvar sono stringhe con la variabile di tempo, status 
+    ## e variabile da dicotomizzare in x,
+    db <- x[, c(time, status, cutvar)]
+    f <- as.formula(sprintf("Surv(time = %s, event = %s) ~ %s",
+                            time, status, cutvar))
+    mod <- survival::survfit(formula = f, data = db)
+    cutoff <- survMisc::cutp(mod, var = cutvar)
+    cutoff <- cutoff[, c('CP', 'p')]
+    names(cutoff) <- c('cutoff', 'p_value')
+    cutoff$p_value <- pretty_pval(cutoff$p_value)
+    cutoff
+}
+debug(contal)
+contal(r_sizedb, time = 'os_time', status = 'os_status', 
+       cutvar = 'dimen_diff_perc')
+
+## Questa è la funzione da riscrivere senza far affidamento a cutp
+surv_cutoff <- function(time = NULL, status = NULL, marker = NULL, ...)
+{
+    if (is.null(time)) stop("time can't be null")
+    if (is.null(status)) stop("status can't be null")
+    if (is.null(marker)) stop("marker can't be null")
+    browser()
+    local_db <- data.frame('time' = time, 
+                           'status' = status, 
+                           'marker' = marker)
+    model <- coxph(Surv(time = time, event = status) ~ marker, 
+                   data = local_db)
+    ## survMisc version 0.5
+    ## survMisc::cutp(model, ...)
+    ## survMisc version 0.4
+    survMisc::cutp(model, var = 'marker')
+}
+
+## test della funzione su esempio
+data(kidtran, package="KMsurv")
+k1 <- kidtran
+k2 <- k1[k1$gender==1 & k1$race==2, ]
+
+## c1 <- coxph(Surv(time, delta) ~ age, data = k2)
+## survMisc::cutp(c1, var="age")
+surv_cutoff(time = k2$time, status = k2$delta, marker = k2$age)
+
+## applicazione al caso concreto
+cutpoint <- function(data){
+    reducts <- data[data$dimen_diff_cl %in% 'Reduction',]
+    surv_cutoff(time    = reducts$os_time_from_surg,
+                status = reducts$os_status_from_surg, 
+                marker = reducts$dimen_diff)
+}
+cutpoint_res <- lapply(dimen_list, cutpoint)
+
+## ----------------------------------------------------------------
+
+## Procediamo ad ogni modo a determinare un cutoff seguendo l'approccio di Conta## l
+## e O'Quigley; in sostanza la procedura effettua una massimizzazione
+## assimilabile ad un log rank test, ma fornisce al contempo un p-value
+## corretto alla luce di tale massimizzazione. In seguito il cutoff ottenuto
+## viene utilizzato per il plot di due curve Kaplan-Meier:
+
+
+## cutoff.co.uni <- cutp(uni.modello, var="marker", plot = FALSE)
+db.surv$segfr.co <- factor(db.surv$segfr >= co[1,1 ,drop = TRUE],
+                           levels = c(FALSE, TRUE),
+                           labels = c("<  45.7", ">= 45.7"))
+with(db.surv, km(time = os.time,
+                 status = os.dummy,
+                 strata = segfr.co,
+                 time.unit = "months",
+                 test = "l",
+                 ylab = "Progression free survival",
+                 main = "",
+                 col = c( "black", "red"),
+                 lty = 2:3 
+                 ))
+asd <- coxph(Surv(os.time, os.dummy) ~ segfr.co, data = db.surv)
+foo <- summary(asd)
+foo$coefficients
+schtest1 <- cox.zph(asd)
+
+## Funzione che a partire dall'end point e dal marker considerato riproduce
+## gran parte della tabella 3
+prognostic_analysis <- function(ep, marker, original_dataset){
+  require(survMisc)
+  require(pROC)
+  require(survival)
+  rval <- list(ep = ep, marker = marker)
+  db <- data.frame(time = original_dataset[, paste(ep, "time_c3", sep = "_")],
+                   status = original_dataset[, paste(ep, "status_c3", sep = "_")],
+                   mark = original_dataset[, marker])
+  ## rval$events <- sum(db$status)
+  coxModel <- coxph(Surv(time = time, event = status) ~ mark, data = db)
+  contal <- cutp(coxModel, var = "mark")
+  rval$contal_thresh <- contal[1, "cp"]
+  rval$contal_p <- contal[1, "p"]
+  db$above <- db$mark >= rval$contal_thresh
+  rval$marker_quantile <- mean(db$above)
+  rval$events_below <- sum(db$status[!db$above])
+  rval$events_above <- sum(db$status[db$above])
+  coxDichotomized <- coxph(Surv(time = time, event = status) ~ above, 
+                           data = db)
+  scoxDichotomized <- summary(coxDichotomized)
+  rval$HR <- exp(coef(coxDichotomized))
+  CI <- exp(confint(coxDichotomized))
+  rval$CI_low <- CI[1]
+  rval$CI_up <- CI[2]
+  ## rval$P_value <- (scoxDichotomized$coefficients)[1, "Pr(>|z|)"]
+  rval
+}
+library(parallel)
+cl <- makeCluster(detectCores())
+res <- clusterMap(cl, 
+                  prognostic_analysis,
+                  rep(ep, each = length(markers)), 
+                  rep(markers, length(ep)),
+                  (list(ad))[rep(1, 24)]                  
+                  )
+stopCluster(cl)
+res <- do.call("rbind", lapply(res, as.data.frame))
+colnames(res) <- c("End point",
+                   "Marker",
+                   ## "Events",
+                   "Contal Threshold",
+                   "Contal P-value",
+                   "%Pts above threshold",
+                   "Events below",
+                   "Events above",
+                   "Univariate HR",
+                   "Lower 95% CI",
+                   "Upper 95% CI"#,
+                   ## "Univariate P-value"
+                   )
+rownames(res) <- NULL
+(res_list$prognostic_value <- as.data.frame(res))
+
+
+
+@ 
