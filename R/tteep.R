@@ -128,6 +128,7 @@ tteep <- function(start_date = NULL,
             rval$os_time[neg_times]   <- NA
             rval$os_status[neg_times] <- NA
         }
+        rval$os <- survival::Surv(time = rval$os_time, event = rval$os_status)
     } 
     ## Progression Free Survival
     if ("pfs" %in% ep) { 
@@ -149,6 +150,7 @@ tteep <- function(start_date = NULL,
             rval$pfs_time[neg_times]   <- NA
             rval$pfs_status[neg_times] <- NA
         }
+        rval$pfs <- survival::Surv(time = rval$pfs_time, event = rval$pfs_status)
     } 
     ## Time to progression
     if ("ttp" %in% ep) {
@@ -169,9 +171,10 @@ tteep <- function(start_date = NULL,
             rval$ttp_time[neg_times]   <- NA
             rval$ttp_status[neg_times] <- NA
         }
+        rval$ttp <- survival::Surv(time = rval$ttp_time, event = rval$ttp_status)
     }
     
-    name_order <- paste(rep(ep, each = 2), c("time", "status"), sep = "_")
+    name_order <- paste0(rep(ep, each = 3), c("", "_time", "_status"))
     rval <- as.data.frame(rval)[name_order]
 
     ## -----------------------
@@ -234,7 +237,3 @@ date_cleaner <- function(base, date) {
     date[check %in% TRUE] <- NA
     date
 }
-
-    
-
-    
