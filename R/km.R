@@ -251,11 +251,12 @@ km <- function(time = NULL,
     ## Summary estimates for presentation purposes
     est_times <- seq(from = 0L, to = max(times), by = time_divisor)
     sfit2 <- summary(fit, times = est_times)
-    ret_sfit <- if (univariate) with(sfit2,
-                                     data.frame('time' = time / time_divisor,
-                                                'Estimate' =  surv,
-                                                'Lower'    = lower,
-                                                'Upper'    = upper))
+    ret_sfit <- if (univariate)
+                    with(sfit2,
+                         data.frame('time' = round(time/time_divisor),
+                                    'Estimate' = surv,
+                                    'Lower'    = lower,
+                                    'Upper'    = upper))
                 else with(sfit2,
                           data.frame('time' = time / time_divisor,
                                      'group' = gsub('strata=', '', strata),
