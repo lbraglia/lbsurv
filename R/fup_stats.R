@@ -126,3 +126,24 @@ fup_stats <- function(time = NULL,
                  'completeness' = completeness)
     return(rval)
 }
+
+
+
+## time_unit_divisor <- function(time_unit = c("days", "weeks", "months", "years")){
+##     time_unit <- match.arg(time_unit)
+##     switch(time_unit,
+##            days = 1,
+##            weeks = 7,
+##            months = 30.43,
+##            years = 365.25)
+## }
+
+## median_fup <- function(os_time, os_status, 
+##                        time_unit = c("days", "weeks", "months", "years")){
+##     time_unit <- match.arg(time_unit)
+##     rev_km <- km(time = os_time, status = 1 - os_status, plot = FALSE, 
+##                  time_unit = time_unit)$quantiles
+##     raw <- tapply(os_time, os_status, quantile, probs = c(0.5, 0.25, 0.75))
+##     raw <- do.call(rbind, raw)/time_unit_divisor(time_unit)
+##     list(raw = raw, rev_km = rev_km)
+## }
