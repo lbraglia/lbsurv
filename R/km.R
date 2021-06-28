@@ -246,7 +246,9 @@ km <- function(time = NULL,
     quantiles <- do.call(cbind, quantiles)
     quantiles <- quantiles / time_divisor
     quantiles <- as.data.frame(quantiles)
-    names(quantiles) <- c("estimate", "lower", "upper")
+    names(quantiles) <- c(if (quantile_probs == 0.5) "median" else "estimate",
+                          "lower",
+                          "upper")
 
     ## Summary estimates for presentation purposes
     est_times <- seq(from = 0L, to = max(times), by = time_divisor)

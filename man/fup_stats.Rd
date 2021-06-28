@@ -25,9 +25,6 @@ fup_stats(
 
 \item{cutoff}{(in days?)}
 }
-\value{
-A data.frame with a global C and a C for each group
-}
 \description{
 Calculate median follow up time (reverse KM method) and C index 
 for follow up completeness.
