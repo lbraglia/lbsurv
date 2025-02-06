@@ -2,5 +2,21 @@
 % Please edit documentation in R/lbsurv_package.R
 \docType{package}
 \name{lbsurv}
+\alias{lbsurv-package}
 \alias{lbsurv}
 \title{lbsurv.}
+\description{
+Survival analysis utility functions.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{http://github.com/lbraglia/lbsurv}
+  \item Report bugs at \url{http://github.com/lbraglia/lbsurv/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Luca Braglia \email{lbraglia@gmail.com}
+
+}
